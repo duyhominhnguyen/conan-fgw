@@ -13,7 +13,7 @@ A molecule's 2D representation consists of its atoms, their attributes, and the 
 - [Usage](#usage)
 
 ## Update
-- May 2024: We release 1st version of codebase
+- **May 2024**: We release 1st version of codebase.
 
 ## Introduction
 This repository provides implementations for E(3)-invariant molecular conformer aggregation networks on a collection of 7 benchmark datasets designed to address a wide range of graph-related tasks such as classification and regression. Our implementations are built on state-of-the-art deep learning frameworks and are designed to be easily extensible and customizable.
