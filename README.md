@@ -48,9 +48,8 @@ conda env update -n conan --file environment.yaml
 ```
 
 ## Data
-To refer benchmark datasets, please get access this link and download it.
-
-
+To refer benchmark datasets, please get access this link and download [here](https://mega.nz/folder/X9VEXb7D#xv6fXIon_00tgevNMZn73A).
+After finishing the download process, please put them into the directory **/data**.
 
 ## Usage
 The project focuses on leveraging four MoleculeNet datasets: Lipo, ESOL, FreeSolv, and BACE. Furthermore, it explores two CoV-2 datasets and one catalysts dataset known as BDE. All relevant data is stored within the `data` directory. To configure the settings for each dataset, corresponding configuration files are provided in the `src/config` folder.
