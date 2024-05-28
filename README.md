@@ -76,11 +76,6 @@ python src/2_train_and_eval.py \
 
 ## Citation
 Please cite this paper if it helps your research:
-<p>
-<img src="https://img.shields.io/badge/optimal%20transport-8A2BE2"/>
-<img src="https://img.shields.io/badge/molecular%20learning-8A2BE2"/>
-</p>
-
 ```bibtex
 @article{nguyen2024structure,
   title={Structure-Aware E (3)-Invariant Molecular Conformer Aggregation Networks},
