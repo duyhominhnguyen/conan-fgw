@@ -1,5 +1,5 @@
 # Structure-Aware E(3)-Invariant Molecular Conformer Aggregation Networks
-This repository contains PyTorch implementation for ICML 2024 paper: **Structure-Aware E(3)-Invariant Molecular Conformer Aggregation Networks [[arXiv]](https://arxiv.org/abs/2402.01975)**.
+:fire: :fire: This repository contains PyTorch implementation for ICML 2024 paper: **Structure-Aware E(3)-Invariant Molecular Conformer Aggregation Networks [[arXiv]](https://arxiv.org/abs/2402.01975)**.
 ![Overview figure](https://github.com/duyhominhnguyen/conan-fgw/blob/main/figs/ala.png)
 
 ## Citation
