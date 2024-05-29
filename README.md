@@ -52,14 +52,15 @@ To refer benchmark datasets, please get access this link and download [here](htt
 After finishing the download process, please put them into the directory **/data**.
 
 ## Usage
-The project focuses on leveraging four MoleculeNet datasets: Lipo, ESOL, FreeSolv, and BACE. Furthermore, it explores two CoV-2 datasets and one catalysts dataset known as BDE. All relevant data is stored within the `data` directory. To configure the settings for each dataset, corresponding configuration files are provided in the `src/config` folder.
+The project focuses on leveraging four MoleculeNet datasets: Lipo, ESOL, FreeSolv, BACE, and two CoV-2 datasets. All relevant data is stored within the **/data** directory. To configure the settings for each dataset, corresponding configuration files are provided in the **/src/config** folder.
 
 To reproduce experiments, please refer:
 ```bash
 ## scripts/train.sh
-ds=lipo
-n_cfm=3
-exp=schnet_no_sum
+ds=lipo                  --> dataset name
+n_cfm=3                  --> number of conformers
+exp=schnet_no_sum        --> 3d embedding model
+
 python src/2_train_and_eval.py \
         --config_name=src/config/$ds/$ds\_$n_cfm.yaml \
         --cuda_device=0 \
