@@ -21,9 +21,11 @@ This repository provides implementations for E(3)-invariant molecular conformer 
 The repository is structured as follows:
 
 - **data/**: This directory contains scripts and utilities for downloading and preprocessing benchmark datasets.
-- **output/**: This directory contains processes' outcome including logs and checkpoints.
-- **scripts/**: This directory is intended to store experimental scripts.
-- **src/**: This directory contains the source code for training, evaluating, and visualizing GNN models.
+- **outputs/**: This directory contains processes' outcome including logs.
+- **models/**: This directory contains processes' outcome including checkpoints.
+- **conan_fgw/script**: This directory is intended to store experimental scripts.
+- **conan_fgw/src**: This directory contains the source code for training, evaluating, and visualizing models.
+- **conan_fgw/config**: This directory is intended to store experimental configurations.
 - **README.md**: This file contains information about the project, including installation instructions, usage examples, and a description of the repository structure.
 - **environment.yml**: This file lists all Python dependencies required to run the project.
 - **.gitignore**: This file specifies which files and directories should be ignored by Git version control.
@@ -47,29 +49,22 @@ pip install torch==2.0.0 torchvision==0.15.1 torchaudio==2.0.1
 conda env update -n conan --file environment.yaml
 ```
 
+Create ```.env``` file to store the environment variables including ```WOKRDIR``` and ```WANDB_API_KEY```
+
+```
+WANDB_API_KEY=<your_wandb_api_key>
+WORKDIR=<your_work_directory>
+```
 ## Data
 To refer benchmark datasets, please get access this link and download [here](https://mega.nz/folder/X9VEXb7D#xv6fXIon_00tgevNMZn73A).
 After finishing the download process, please put them into the directory **/data**.
 
 ## Usage
-The project focuses on leveraging four MoleculeNet datasets: Lipo, ESOL, FreeSolv, BACE, and two CoV-2 datasets. All relevant data is stored within the **/data** directory. To configure the settings for each dataset, corresponding configuration files are provided in the **/src/config** folder.
+The project focuses on leveraging four MoleculeNet datasets: Lipo, ESOL, FreeSolv, BACE, and two CoV-2 datasets. All relevant data is stored within the **/data** directory. To configure the settings for each dataset, corresponding configuration files are provided in the **conan_fgw/config/** folder.
 
 To reproduce experiments, please refer:
 ```bash
-## scripts/train.sh
-ds=lipo                  --> dataset name
-n_cfm=3                  --> number of conformers
-exp=schnet_no_sum        --> 3d embedding model
 
-python src/2_train_and_eval.py \
-        --config_name=src/config/$ds/$ds\_$n_cfm.yaml \
-        --cuda_device=0 \
-        --data_root=conan_fgw \
-        --number_of_runs=3 \
-        --checkpoints_dir=checkpoints \
-        --run_name=$exp\_$ds\_$n_cfm \
-        --run_mode=train \
-        --model_name=$exp
 ```
 
 
