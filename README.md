@@ -12,7 +12,7 @@
 - [Usage](#usage)
 
 ## Update
-- **17 July 2024**: We release 1st version of codebase.
+:mega: **17 July 2024**: We release 1st version of codebase.
 
 ## Introduction
 We provide implementations for E(3)-invariant molecular conformer aggregation networks (**ConAN**) on a collection of six benchmark datasets related to **molecular property prediction** and **molecular classification**. Our model builds on state-of-the-art deep learning frameworks and is designed to be easily extensible and customizable.
