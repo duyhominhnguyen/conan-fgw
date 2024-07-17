@@ -49,12 +49,6 @@ pip install torch==2.0.0 torchvision==0.15.1 torchaudio==2.0.1
 conda env update -n conan --file environment.yaml
 ```
 
-Create ```.env``` file to store the environment variables including ```WOKRDIR``` and ```WANDB_API_KEY```
-
-```
-WANDB_API_KEY=<your_wandb_api_key>
-WORKDIR=<your_work_directory>
-```
 ## Data
 To refer benchmark datasets, please get access this link and download [here](https://mega.nz/folder/X9VEXb7D#xv6fXIon_00tgevNMZn73A).
 After finishing the download process, please put them into the directory **/data**.
@@ -64,7 +58,7 @@ The project focuses on leveraging four MoleculeNet datasets: Lipo, ESOL, FreeSol
 
 To reproduce experiments, please refer:
 ```bash
-
+bash conan_fgw/script/run.sh
 ```
 
 
