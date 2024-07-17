@@ -1,7 +1,6 @@
-# Structure-Aware E(3)-Invariant Molecular Conformer Aggregation Networks
-:fire: :fire: This repository contains PyTorch implementation for ICML 2024 paper: **Structure-Aware E(3)-Invariant Molecular Conformer Aggregation Networks [[arXiv]](https://arxiv.org/abs/2402.01975)**.
+# Structure-Aware E(3)-Invariant Molecular Conformer Aggregation Networks (ICML 2024)
+:fire: :fire: This repository contains PyTorch implementation for our paper: **Structure-Aware E(3)-Invariant Molecular Conformer Aggregation Networks [[arXiv]](https://arxiv.org/abs/2402.01975)**.
 
-A molecule's 2D representation consists of its atoms, their attributes, and the molecule's covalent bonds. A 3D (geometric) representation of a molecule is called a conformer and consists of its atom types and Cartesian coordinates. Every conformer has a potential energy, and the lower this energy, the more likely it occurs in nature. Most existing machine learning methods for molecular property prediction consider either 2D molecular graphs or 3D conformer structure representations in isolation. Inspired by recent work on using ensembles of conformers in conjunction with 2D graph representations, we propose E(3)-invariant molecular conformer aggregation networks. The method integrates a molecule's 2D representation with that of multiple of its conformers. Contrary to prior work, we propose a novel 2D--3D aggregation mechanism based on a differentiable solver for the Fused Gromov-Wasserstein Barycenter problem and the use of an efficient online conformer generation method based on distance geometry. We show that the proposed aggregation mechanism is E(3) invariant and provides an efficient GPU implementation. Moreover, we demonstrate that the aggregation mechanism helps to significantly outperform state-of-the-art property prediction methods on established datasets.
 ![Overview figure](figs/ala.png)
 
 ## Table of Contents
@@ -13,22 +12,22 @@ A molecule's 2D representation consists of its atoms, their attributes, and the 
 - [Usage](#usage)
 
 ## Update
-- **May 2024**: We release 1st version of codebase.
+- **17 July 2024**: We release 1st version of codebase.
 
 ## Introduction
-This repository provides implementations for E(3)-invariant molecular conformer aggregation networks on a collection of 6 benchmark datasets designed to address a wide range of graph-related tasks such as classification and regression. Our implementations are built on state-of-the-art deep learning frameworks and are designed to be easily extensible and customizable.
+We provide implementations for E(3)-invariant molecular conformer aggregation networks (**ConAN**) on a collection of six benchmark datasets related to **molecular property prediction** and **molecular classification**. Our model builds on state-of-the-art deep learning frameworks and is designed to be easily extensible and customizable.
 
 The repository is structured as follows:
 
-- **data/**: This directory contains scripts and utilities for downloading and preprocessing benchmark datasets.
-- **outputs/**: This directory contains processes' outcome including logs.
-- **models/**: This directory contains processes' outcome including checkpoints.
-- **conan_fgw/script**: This directory is intended to store experimental scripts.
-- **conan_fgw/src**: This directory contains the source code for training, evaluating, and visualizing models.
-- **conan_fgw/config**: This directory is intended to store experimental configurations.
-- **README.md**: This file contains information about the project, including installation instructions, usage examples, and a description of the repository structure.
-- **environment.yml**: This file lists all Python dependencies required to run the project.
-- **.gitignore**: This file specifies which files and directories should be ignored by Git version control.
+- ```data/```: This directory contains scripts and utilities for downloading and preprocessing benchmark datasets.
+- ```outputs/```: This directory contains processes' outcome including logs.
+- ```models/```: This directory contains processes' outcome including checkpoints.
+- ```conan_fgw/script```: This directory is intended to store experimental scripts.
+- ```conan_fgw/src```: This directory contains the source code for training, evaluating, and visualizing models.
+- ```conan_fgw/config```: This directory is intended to store experimental configurations.
+- ```README.md```: This file contains information about the project, including installation instructions, usage examples, and a description of the repository structure.
+- ```environment.yml```: This file lists all Python dependencies required to run the project.
+- ```.gitignore```: This file specifies which files and directories should be ignored by Git version control.
 
 ## Installation
 
@@ -51,10 +50,10 @@ conda env update -n conan --file environment.yaml
 
 ## Data
 To refer benchmark datasets, please get access this link and download [here](https://mega.nz/folder/X9VEXb7D#xv6fXIon_00tgevNMZn73A).
-After finishing the download process, please put them into the directory **/data**.
+After finishing the download process, please put them into the directory ```/data```.
 
 ## Usage
-The project focuses on leveraging four MoleculeNet datasets: Lipo, ESOL, FreeSolv, BACE, and two CoV-2 datasets. All relevant data is stored within the **/data** directory. To configure the settings for each dataset, corresponding configuration files are provided in the **conan_fgw/config/** folder.
+The project focuses on leveraging four MoleculeNet datasets: Lipo, ESOL, FreeSolv, BACE, and two CoV-2 datasets. All relevant data is stored within the ```/data``` directory. To configure the settings for each dataset, corresponding configuration files are provided in the ```conan_fgw/config/``` folder.
 
 To reproduce experiments, please refer:
 ```bash
