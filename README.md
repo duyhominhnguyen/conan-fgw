@@ -121,11 +121,11 @@ python conan_fgw/src/train_val.py \
 For other experiments, we need to change the following group of arguments:
 
 ```bash
-model=<backbone_gnn_model>    ## Two backbone GNNs: schnet and visnet                      
-task=<molecular_task>         ## Two main molecular tasks: property_regression and classification
-ds=<dataset_name>             ## Four datasets for property_regression and two datasets for classification tasks
-n_cfm=3                       ## Number of conformers used for extraction by 3D message passing networks
-runs=3                        ## Number of runs for general evaluation
+model=<backbone_gnn_model>            ## Two backbone GNNs: schnet and visnet                      
+task=<molecular_task>                 ## Two main molecular tasks: property_regression and classification
+ds=<dataset_name>                     ## Four datasets for property_regression and two datasets for classification tasks
+n_cfm=<number_of_used_conformers>     ## Number of conformers used for extraction by 3D message passing networks
+runs=<number_of_exp_runs>             ## Number of runs for general evaluation
 ```
 
 ## Citation
