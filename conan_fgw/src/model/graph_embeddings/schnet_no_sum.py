@@ -142,9 +142,6 @@ class SchNetNoSum(SchNet):
             )  # MLP for barycenter
             # self.covalent_linear = torch.nn.Linear(COVALENT_BONDS_ATTRS_DIM, hidden_channels)
             # self.assembled_linear = torch.nn.Linear(hidden_channels, hidden_channels)
-        self.run_name = None
-        self.log = []
-        self.logdir = None
 
     def forward(self, z: Tensor, pos: Tensor, batch: OptTensor = None, data_batch=None) -> Tensor:
         r"""

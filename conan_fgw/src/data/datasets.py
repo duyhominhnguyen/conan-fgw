@@ -33,8 +33,6 @@ from rdkit.Chem.Draw import IPythonConsole
 import rdkit
 import py3Dmol
 
-python_logger = logging.getLogger("datasets")
-
 
 def drawit(
     m,

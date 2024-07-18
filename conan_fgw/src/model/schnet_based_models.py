@@ -94,8 +94,6 @@ class EmbeddingsWithGATAggregationBaryCenter(EquivAggregation):
         **kwargs,
     ):
         super().__init__(num_conformers, batch_size, learning_rate, model_name, is_distributed)
-        self.node_embeddings_model.run_name = kwargs.get("run_name")
-        self.node_embeddings_model.solver = kwargs.get("solver")
         out_channels = self.node_embeddings_model.hidden_channels // 2
         self.gat_embeddings_model = EquivModelsHolder.get_model("gat", self.device, feat_dim=128)
         self.transformation_matrix_3d = Linear(out_channels, out_channels)
@@ -327,8 +325,6 @@ class EmbeddingsWithGATAggregationClassificationBaryCenter(EquivAggregationClass
             is_distributed,
             trade_off,
         )
-        self.node_embeddings_model.run_name = kwargs.get("run_name")
-        self.node_embeddings_model.solver = kwargs.get("solver")
         out_channels = self.node_embeddings_model.hidden_channels // 2
         self.gat_embeddings_model = EquivModelsHolder.get_model("gat", self.device, feat_dim=512)
         self.transformation_matrix_3d = Linear(out_channels, out_channels)

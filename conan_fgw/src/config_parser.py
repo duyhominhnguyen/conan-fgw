@@ -1,9 +1,11 @@
-from jsonargparse import ArgumentParser
+from jsonargparse import ArgumentParser as JsonArgsParser
+from argparse import ArgumentParser as CmdArgsParser
+
 from typing import List
 import yaml
 
 
-def create_args_parser() -> ArgumentParser:
+def config_yaml_parser() -> JsonArgsParser:
     """
     Creates and returns an ArgumentParser for parsing command-line arguments.
 
@@ -32,7 +34,7 @@ def create_args_parser() -> ArgumentParser:
 
     To view an example of config at "conan_fgw/config/schnet/property_regression/lipo/lipo_3_bc.yaml"
     """
-    args_parser = ArgumentParser()
+    args_parser = JsonArgsParser()
     args_parser.add_argument("--num_epochs", type=int)
     args_parser.add_argument("--num_cuda_devices", type=int)
     args_parser.add_argument("--use_wandb", type=bool)
@@ -56,3 +58,64 @@ def create_args_parser() -> ArgumentParser:
     args_parser.add_argument("--trade-off", type=bool, default=False)
 
     return args_parser
+
+
+def cmd_args_parser() -> CmdArgsParser:
+    """
+    Creates a command-line argument parser with predefined arguments.
+
+    Arguments:
+        --config_path (str): Path to the configuration file.
+        --cuda_device (int): Index of the CUDA device to use.
+        --data_root (str): Root directory for the data.
+        --number_of_runs (int, default=3): Number of runs for evaluating the model.
+        --checkpoints_dir (str): Directory to save checkpoints.
+        --logs_dir (str): Directory to save logs.
+        --run_name (str): Name of the current run for tracking.
+        --stage (str, choices=["initial", "fgw"], default="initial"): Stage of the experiment.
+        --run_id (str): ID of the current run.
+        --model_name (str, choices=["schnet", "visnet"], default="schnet"): Name of the model to be created.
+        --initial_ckpt_dir (str, default=None): Directory of the initial checkpoint (if any).
+
+    Returns:
+        ArgumentParser: Configured argument parser.
+    """
+    cmd_args_parser = CmdArgsParser()
+    cmd_args_parser.add_argument("--config_path", type=str, help="Path to the configuration file.")
+    cmd_args_parser.add_argument(
+        "--cuda_device", type=int, help="Index of the CUDA device to use."
+    )
+    cmd_args_parser.add_argument("--data_root", type=str, help="Root directory for the data.")
+    cmd_args_parser.add_argument(
+        "--number_of_runs",
+        type=int,
+        default=3,
+        help="Number of runs for evaluating the model (default: 3).",
+    )
+    cmd_args_parser.add_argument(
+        "--checkpoints_dir", type=str, help="Directory to save checkpoints."
+    )
+    cmd_args_parser.add_argument("--logs_dir", type=str, help="Directory to save logs.")
+    cmd_args_parser.add_argument(
+        "--run_name", type=str, help="Name of the current run for tracking."
+    )
+    cmd_args_parser.add_argument(
+        "--stage",
+        type=str,
+        choices=["initial", "fgw"],
+        default="initial",
+        help="Stage of the experiment (default: 'initial'). Available options are 'initial' and 'fgw'.",
+    )
+    cmd_args_parser.add_argument("--run_id", type=str, help="ID of the current run.")
+    cmd_args_parser.add_argument(
+        "--model_name",
+        type=str,
+        choices=["schnet", "visnet"],
+        default="schnet",
+        help="Name of the model to be created (default: 'schnet'). Available options are 'schnet' and 'visnet'.",
+    )
+    cmd_args_parser.add_argument(
+        "--initial_ckpt_dir", default=None, help="Directory of the initial checkpoint (if any)."
+    )
+
+    return cmd_args_parser

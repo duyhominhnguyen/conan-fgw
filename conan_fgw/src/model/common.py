@@ -22,43 +22,6 @@ from conan_fgw.src.trainer import TrainerHolder
 import time
 
 
-class CustomScheduler(ReduceLROnPlateau):
-    def __init__(
-        self,
-        optimizer,
-        warmup_steps=4,
-        warmup_factor=0.05,
-        mode="min",
-        factor=0.1,
-        patience=5,
-        verbose=True,
-    ):
-        super().__init__(optimizer, mode, factor, patience, verbose)
-        self.warmup_steps = warmup_steps
-        self.warmup_factor = warmup_factor
-        self.counter = 0
-        self.optimizer = optimizer
-        self.base_lrs = [group["lr"] for group in optimizer.param_groups]
-
-    def step(self, metrics, epoch=None):
-        if epoch is None:
-            epoch = self.last_epoch + 1
-        if epoch < self.warmup_steps:
-            for param_group, lr in zip(self.optimizer.param_groups, self.get_lr()):
-                param_group["lr"] = lr
-            self.last_epoch = epoch
-        else:
-            super().step(metrics, epoch)
-
-    def get_lr(self):
-        if self.last_epoch < self.warmup_steps:
-            return [
-                base_lr * ((self.last_epoch + 1) / self.warmup_steps) * self.warmup_factor
-                for base_lr in self.base_lrs
-            ]
-        return [group["lr"] for group in self.optimizer.param_groups]
-
-
 class MoleculeNetClassificationModel(pl.LightningModule, metaclass=ABCMeta):
     def __init__(
         self,
@@ -137,7 +100,9 @@ class MoleculeNetClassificationModel(pl.LightningModule, metaclass=ABCMeta):
         metric = self.shared_epoch_end((self.train_y_pred, self.train_y_true), "train")
         self._log_metrics(
             {
-                f"train_{TrainerHolder.classification_metric_name(self.trade_off)[i]}": metric[i]
+                f"train_{TrainerHolder.classification_metric_name(self.trade_off)[i]}": metric[
+                    i
+                ].item()
                 for i in range(len(metric))
             },
             sync_dist=True,
@@ -163,7 +128,9 @@ class MoleculeNetClassificationModel(pl.LightningModule, metaclass=ABCMeta):
             metric = self.shared_epoch_end((val_y_pred_comb, val_y_true_comb), "val")
             self._log_metrics(
                 {
-                    f"val_{TrainerHolder.classification_metric_name(self.trade_off)[i]}": metric[i]
+                    f"val_{TrainerHolder.classification_metric_name(self.trade_off)[i]}": metric[
+                        i
+                    ].item()
                     for i in range(len(metric))
                 },
                 sync_dist=False,
@@ -182,7 +149,9 @@ class MoleculeNetClassificationModel(pl.LightningModule, metaclass=ABCMeta):
             metric = self.shared_epoch_end((self.val_y_pred, self.val_y_true), "val")
             self._log_metrics(
                 {
-                    f"val_{TrainerHolder.classification_metric_name(self.trade_off)[i]}": metric[i]
+                    f"val_{TrainerHolder.classification_metric_name(self.trade_off)[i]}": metric[
+                        i
+                    ].item()
                     for i in range(len(metric))
                 }
             )
@@ -207,17 +176,12 @@ class MoleculeNetClassificationModel(pl.LightningModule, metaclass=ABCMeta):
                 {
                     f"test_{TrainerHolder.classification_metric_name(self.trade_off)[i]}": metric[
                         i
-                    ]
+                    ].item()
                     for i in range(len(metric))
                 },
                 sync_dist=False,
                 rank_zero_only=True,
             )
-            # else:
-            #     num_metrics = 3 if self.trade_off else 2
-            #     self.trainer.callback_metrics.update(
-            #         {f'test_{TrainerHolder.classification_metric_name(self.trade_off)[i]}': torch.tensor(0.) for i in range(num_metrics)}
-            #     )
             self.test_y_pred.clear()
             self.test_y_true.clear()
         else:
@@ -228,7 +192,7 @@ class MoleculeNetClassificationModel(pl.LightningModule, metaclass=ABCMeta):
                 {
                     f"test_{TrainerHolder.classification_metric_name(self.trade_off)[i]}": metric[
                         i
-                    ]
+                    ].item()
                     for i in range(len(metric))
                 }
             )
@@ -247,11 +211,6 @@ class MoleculeNetClassificationModel(pl.LightningModule, metaclass=ABCMeta):
                 class_weights = class_weights.to(expected.get_device())
         loss = F.binary_cross_entropy(predicted, expected, weight=class_weights)
         return loss
-
-    # @staticmethod
-    # def classification_loss_wo_weight(predicted, expected):
-    #     loss = F.binary_cross_entropy(predicted, expected)
-    #     return loss
 
     def _log_metrics(
         self, metrics, on_step=False, on_epoch=True, sync_dist=True, rank_zero_only=False
@@ -329,7 +288,7 @@ class MoleculeNetRegressionModel(pl.LightningModule, metaclass=ABCMeta):
         self.train_y_true = torch.cat(self.train_y_true, dim=0)
         metric = self.shared_epoch_end((self.train_y_pred, self.train_y_true), "train")
         self._log_metrics(
-            {f"train_{TrainerHolder.regression_metric_name()}": metric}, rank_zero_only=True
+            {f"train_{TrainerHolder.regression_metric_name()}": metric.item()}, rank_zero_only=True
         )
         self._log_metrics({"runtime": time.time() - self.start_time})
         self.train_y_pred = []
@@ -349,7 +308,7 @@ class MoleculeNetRegressionModel(pl.LightningModule, metaclass=ABCMeta):
 
             metric = self.shared_epoch_end((val_y_pred_comb, val_y_true_comb), "val")
             self._log_metrics(
-                {f"val_{TrainerHolder.regression_metric_name()}": metric},
+                {f"val_{TrainerHolder.regression_metric_name()}": metric.item()},
                 sync_dist=False,
                 rank_zero_only=True,
             )
@@ -359,7 +318,7 @@ class MoleculeNetRegressionModel(pl.LightningModule, metaclass=ABCMeta):
             self.val_y_pred = torch.cat(self.val_y_pred, dim=0)
             self.val_y_true = torch.cat(self.val_y_true, dim=0)
             metric = self.shared_epoch_end((self.val_y_pred, self.val_y_true), "val")
-            self._log_metrics({f"val_{TrainerHolder.regression_metric_name()}": metric})
+            self._log_metrics({f"val_{TrainerHolder.regression_metric_name()}": metric.item()})
             self.val_y_pred = []
             self.val_y_true = []
 
@@ -378,7 +337,7 @@ class MoleculeNetRegressionModel(pl.LightningModule, metaclass=ABCMeta):
             # if self.trainer.is_global_zero:
             metric = self.shared_epoch_end((test_y_pred_comb, test_y_true_comb), "test")
             self._log_metrics(
-                {f"test_{TrainerHolder.regression_metric_name()}": metric},
+                {f"test_{TrainerHolder.regression_metric_name()}": metric.item()},
                 sync_dist=False,
                 rank_zero_only=True,
             )
@@ -388,7 +347,7 @@ class MoleculeNetRegressionModel(pl.LightningModule, metaclass=ABCMeta):
             self.test_y_pred = torch.cat(self.test_y_pred, dim=0)
             self.test_y_true = torch.cat(self.test_y_true, dim=0)
             metric = self.shared_epoch_end((self.test_y_pred, self.test_y_true), "test")
-            self._log_metrics({f"test_{TrainerHolder.regression_metric_name()}": metric})
+            self._log_metrics({f"test_{TrainerHolder.regression_metric_name()}": metric.item()})
             self.test_y_pred = []
             self.test_y_true = []
 

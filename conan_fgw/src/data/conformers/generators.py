@@ -11,8 +11,6 @@ from tqdm import tqdm
 import time
 import numpy as np
 
-python_logger = logging.getLogger("conformers_generators")
-
 
 class MolWithRepeatingConformers:
     def __init__(self, smiles, mol: Chem.Mol, idx: str, num_conformers: int):
