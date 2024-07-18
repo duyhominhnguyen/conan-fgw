@@ -6,7 +6,7 @@ num_conformers: 3
 prune_conformers: false
 batch_size: 36
 experiment: conan_fgw.src.experiments.SOTAExperiment
-num_epochs: 200
+num_epochs: 1 # 200
 early_stopping:
   min_delta: 0.0001
   patience: 150

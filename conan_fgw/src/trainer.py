@@ -12,18 +12,20 @@ from pytorch_lightning.callbacks import (
     Timer,
     StochasticWeightAveraging,
 )
-from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.loggers import WandbLogger, CSVLogger
 from pytorch_lightning.strategies import SingleDeviceStrategy, DDPStrategy
-from pytorch_lightning.utilities import rank_zero_only
 from torchmetrics.functional import mean_squared_error, auroc, mean_absolute_error
 from sklearn.metrics import roc_auc_score, auc, precision_recall_curve
 import os
 
-python_logger = logging.getLogger("trainer")
+logger = logging.getLogger("ConAN")
 
 
 class TrainerHolder:
+    """
+    A class to hold the training configuration and setup for a machine learning experiment.
+    """
+
     def __init__(
         self,
         config: Namespace,
@@ -33,6 +35,17 @@ class TrainerHolder:
         logs_dir: str,
         monitor_set: str = "val",
     ):
+        """
+        Initializes the TrainerHolder with the given configuration and settings.
+
+        Args:
+            config (Namespace): Configuration for the experiment.
+            is_distributed (bool): Flag indicating if the training is distributed.
+            device (torch.device): Device on which the model will be trained.
+            checkpoints_dir (str): Directory where checkpoints will be saved.
+            logs_dir (str): Directory where logs will be saved.
+            monitor_set (str, optional): The dataset set to monitor. Defaults to "val".
+        """
         self.config = config
         self.device = device
         self.logs_dir = os.path.join(logs_dir, "metrics")
@@ -43,7 +56,7 @@ class TrainerHolder:
                 self.metric_to_monitor = f"{monitor_set}_{TrainerHolder.classification_metric_name(config.trade_off)[0]}"
         else:
             self.metric_to_monitor = f"val_{TrainerHolder.regression_metric_name()}"
-        logging.info(f"🐸 Metric to monitor: {self.metric_to_monitor}")
+
         self.is_distributed = is_distributed
         self.checkpoints_dir = checkpoints_dir
         self.lr_monitor = LearningRateMonitor(logging_interval="step")
@@ -53,9 +66,6 @@ class TrainerHolder:
 
     @staticmethod
     def regression_metric_name():
-        # if "SOTABDE" in self.config.experiment.model_class.__name__:
-        # return "mae"
-        # else:
         return "rmse"
 
     @staticmethod
@@ -67,13 +77,24 @@ class TrainerHolder:
 
     @staticmethod
     def regression_metric(predicted, expected):
-        # if "SOTABDE" in self.config.experiment.model_class.__name__:
-        # return mean_absolute_error(predicted, expected)
-        # else:
+        """
+        Returns:
+            str: Name of the regression metric, which is "rmse".
+        """
         return mean_squared_error(predicted, expected, squared=True)
 
     @staticmethod
     def classification_metric(predicted, expected, trade_off: bool = False):
+        """
+        Names of the classification metrics based on the trade-off flag.
+
+        Args:
+            trade_off (bool, optional): Flag indicating if trade-off metrics should be included. Defaults to False.
+
+        Returns:
+            list: List of classification metric names. If trade_off is True, returns ["auroc", "prc", "mean"].
+                  If trade_off is False, returns ["auroc", "prc"].
+        """
         expected = expected.long()
         auc_score = roc_auc_score(
             y_true=expected.cpu().detach().numpy(), y_score=predicted.cpu().detach().numpy()
@@ -89,18 +110,25 @@ class TrainerHolder:
         return metric
 
     def create_trainer(self, run_name: str, use_distributed_sampler: bool = True) -> pl.Trainer:
+        """
+        Creates and returns a PyTorch Lightning Trainer object configured based on the experiment settings.
+
+        Args:
+            run_name (str): Name of the current run for tracking purposes.
+            use_distributed_sampler (bool, optional): Whether to use distributed sampler for training. Defaults to True.
+
+        Returns:
+            pl.Trainer: Initialized PyTorch Lightning Trainer object.
+        """
         if "Classification" in self.config.experiment.model_class.__name__:
             task = "classification"
         else:
             task = "regression"
-        logging.info(f"🔑 Callback task: {task}")
         callbacks = [
             self.early_stopping_callback(use_loss=True),
             self.checkpoint_callback(run_name, task=task),
             self.lr_monitor,
             self.timer,
-            # self.StochasticWeightAveraging
-            # self.gradient_accumulator_callback()]
         ]
 
         return pl.Trainer(
@@ -110,19 +138,40 @@ class TrainerHolder:
             callbacks=callbacks,
             strategy=self.training_strategy(),
             gradient_clip_val=1.0,
-            # gradient_clip_algorithm="value",
             default_root_dir=self.checkpoints_dir,
             num_sanity_val_steps=-1,
-            # use_distributed_sampler=use_distributed_sampler
         )
 
     def create_logger(self, experiment_name=None) -> [pl.loggers.Logger]:
+        """
+        Creates and returns a list of PyTorch Lightning Logger objects.
+
+        Args:
+            experiment_name (str, optional): Name of the experiment. If not provided, a random name will be generated.
+
+        Returns:
+            list: List containing a CSVLogger instance initialized with the logs directory and experiment name.
+        """
         if not experiment_name:
             experiment_name = "".join(random.choice(string.ascii_lowercase) for _ in range(15))
         loggers = [CSVLogger(self.logs_dir, experiment_name)]
+        logger.info("*" * 100)
+        logger.info(
+            f"📈 Monitoring all metrics @ {os.path.join(self.logs_dir, experiment_name)} | Saving ckpt by {self.metric_to_monitor}"
+        )
+        logger.info("*" * 100)
         return loggers
 
     def early_stopping_callback(self, use_loss: bool = False) -> EarlyStopping:
+        """
+        Creates and returns an EarlyStopping callback object based on the configuration.
+
+        Args:
+            use_loss (bool, optional): Whether to monitor validation loss. Defaults to False.
+
+        Returns:
+            EarlyStopping: Initialized EarlyStopping callback object.
+        """
         if use_loss:
             obj_monitor = "val_loss"
             mode = "min"
@@ -140,9 +189,23 @@ class TrainerHolder:
         )
 
     def checkpoint_callback(self, run_name: str, task: str = "regression") -> ModelCheckpoint:
+        """
+        Creates and returns a ModelCheckpoint callback object based on the task type.
+
+        Args:
+            run_name (str): Name of the current run for checkpointing purposes.
+            task (str, optional): Type of task, either "regression" or "classification". Defaults to "regression".
+
+        Returns:
+            ModelCheckpoint: Initialized ModelCheckpoint callback object.
+        """
+        dirpath = os.path.join(self.checkpoints_dir, run_name)
+        logger.info("*" * 100)
+        logger.info(f"📦 Saving checkpoint @ {dirpath}")
+        logger.info("*" * 100)
         if task == "regression":
             return ModelCheckpoint(
-                dirpath=f"{self.checkpoints_dir}/{run_name}",  # Directory where the checkpoints will be saved
+                dirpath=dirpath,  # Directory where the checkpoints will be saved
                 filename="{epoch}-{step}-{val_rmse:.2f}",  # Checkpoint file name format
                 verbose=True,  # Print a message when a new best checkpoint is saved
                 monitor=self.metric_to_monitor,  # Metric to monitor for saving best checkpoints
@@ -153,7 +216,7 @@ class TrainerHolder:
             if "mean" in self.metric_to_monitor:
                 if self.monitor_set == "train":
                     return ModelCheckpoint(
-                        dirpath=f"{self.checkpoints_dir}/{run_name}",  # Directory where the checkpoints will be saved
+                        dirpath=dirpath,  # Directory where the checkpoints will be saved
                         filename="{epoch}-{step}-{train_mean:.2f}",  # Checkpoint file name format
                         verbose=True,  # Print a message when a new best checkpoint is saved
                         monitor=self.metric_to_monitor,  # Metric to monitor for saving best checkpoints
@@ -162,7 +225,7 @@ class TrainerHolder:
                     )
                 else:
                     return ModelCheckpoint(
-                        dirpath=f"{self.checkpoints_dir}/{run_name}",  # Directory where the checkpoints will be saved
+                        dirpath=dirpath,  # Directory where the checkpoints will be saved
                         filename="{epoch}-{step}-{val_mean:.2f}",  # Checkpoint file name format
                         verbose=True,  # Print a message when a new best checkpoint is saved
                         monitor=self.metric_to_monitor,  # Metric to monitor for saving best checkpoints
@@ -172,7 +235,7 @@ class TrainerHolder:
             else:
                 if self.monitor_set == "train":
                     return ModelCheckpoint(
-                        dirpath=f"{self.checkpoints_dir}/{run_name}",  # Directory where the checkpoints will be saved
+                        dirpath=dirpath,  # Directory where the checkpoints will be saved
                         filename="{epoch}-{step}-{train_auroc:.2f}",  # Checkpoint file name format
                         verbose=True,  # Print a message when a new best checkpoint is saved
                         monitor=self.metric_to_monitor,  # Metric to monitor for saving best checkpoints
@@ -181,7 +244,7 @@ class TrainerHolder:
                     )
                 else:
                     return ModelCheckpoint(
-                        dirpath=f"{self.checkpoints_dir}/{run_name}",  # Directory where the checkpoints will be saved
+                        dirpath=dirpath,  # Directory where the checkpoints will be saved
                         filename="{epoch}-{step}-{val_auroc:.2f}",  # Checkpoint file name format
                         verbose=True,  # Print a message when a new best checkpoint is saved
                         monitor=self.metric_to_monitor,  # Metric to monitor for saving best checkpoints
@@ -191,9 +254,21 @@ class TrainerHolder:
 
     @staticmethod
     def gradient_accumulator_callback() -> GradientAccumulationScheduler:
+        """
+        Creates and returns a GradientAccumulationScheduler callback object with predefined scheduling.
+
+        Returns:
+            GradientAccumulationScheduler: Initialized GradientAccumulationScheduler object.
+        """
         return GradientAccumulationScheduler(scheduling={0: 10, 4: 5, 10: 1})
 
-    def training_strategy(self, is_fgw: bool = False):
+    def training_strategy(self):
+        """
+        Determines and returns the appropriate training strategy based on the device type and distribution.
+
+        Returns:
+            Union[SingleDeviceStrategy, str]: Selected training strategy based on the device type and distribution.
+        """
         if self.device.type == "cuda":
             if self.is_distributed:
                 return "ddp_find_unused_parameters_true"

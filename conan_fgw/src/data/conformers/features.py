@@ -15,8 +15,6 @@ from tqdm import tqdm
 
 from conan_fgw.src.data.conformers.generators import MolWithRepeatingConformers
 
-python_logger = logging.getLogger("features")
-
 
 class MolGraphFeaturizer(ABC):
     pass
