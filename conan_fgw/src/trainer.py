@@ -271,7 +271,7 @@ class TrainerHolder:
         """
         if self.device.type == "cuda":
             if self.is_distributed:
-                return "ddp_find_unused_parameters_true"
+                return "ddp_find_unused_parameters_false"
             else:
                 return SingleDeviceStrategy(self.device, accelerator="cuda")
         elif self.device.type == "cpu":
