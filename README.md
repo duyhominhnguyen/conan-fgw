@@ -85,9 +85,9 @@ ds=lipo
 n_cfm=3
 runs=3
 
-# Set the visible CUDA devices to the first GPU for initial training stage
+# Set the visible CUDA devices to the first GPU for conan_fgw_pre training stage
 export CUDA_VISIBLE_DEVICES=0
-# Run the initial training stage
+# Run the conan_fgw_pre training stage
 python conan_fgw/src/train_val.py \
         --config_path=${WORKDIR}/conan_fgw/config/$model/$task/$ds/$ds\_$n_cfm.yaml \
         --cuda_device=0 \
@@ -96,7 +96,7 @@ python conan_fgw/src/train_val.py \
         --checkpoints_dir=${WORKDIR}/models \
         --logs_dir=${WORKDIR}/outputs \
         --run_name=$model\_$ds\_$n_cfm \
-        --stage=initial \
+        --stage=conan_fgw_pre \
         --model_name=${model} \
         --run_id=$DATE
 
@@ -111,10 +111,10 @@ python conan_fgw/src/train_val.py \
         --checkpoints_dir=${WORKDIR}/models \
         --logs_dir=${WORKDIR}/outputs \
         --run_name=$model\_$ds\_$n_cfm \
-        --stage=fgw \
+        --stage=conan_fgw \
         --model_name=${model} \
         --run_id=$DATE \
-        --initial_ckpt_dir=${WORKDIR}/models/$model\_$ds\_$n_cfm/$DATE
+        --conan_fgw_pre_ckpt_dir=${WORKDIR}/models/$model\_$ds\_$n_cfm/$DATE
 ```
 
 For other experiments, we need to change the following group of arguments:

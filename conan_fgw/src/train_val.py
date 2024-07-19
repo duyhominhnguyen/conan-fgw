@@ -14,7 +14,7 @@ from typing import Type, Union
 from conan_fgw.src.config_parser import config_yaml_parser, cmd_args_parser
 from conan_fgw.src.trainer import TrainerHolder
 from conan_fgw.src.model.utils import load_dummy, seed_everything
-from conan_fgw.src.utils import build_logger, get_device, get_initial_ckpt, AverageRuns
+from conan_fgw.src.utils import build_logger, get_device, get_conan_fgw_pre_ckpt, AverageRuns
 
 torch.set_float32_matmul_precision("medium")
 warnings.filterwarnings("ignore")
@@ -28,7 +28,7 @@ def create_model(
     dataset_idx: int,
     is_distributed: bool,
     model_name: str = "schnet",
-    stage: str = "initial",
+    stage: str = "conan_fgw_pre",
 ) -> object:
     """
     Create and configure a machine learning model for classification or regression tasks.
@@ -40,14 +40,14 @@ def create_model(
         dataset_idx (int): Index of the dataset.
         is_distributed (bool): Flag indicating whether the model training is distributed.
         model_name (str): Name of the model to be created. Available options are ["schnet", "visnet"].
-        stage (str, optional): Stage of the experiment. Defaults to "initial". Available options are ["initial", "fgw"]
+        stage (str, optional): Stage of the experiment. Defaults to "conan_fgw_pre". Available options are ["conan_fgw_pre", "fgw"]
 
     Returns:
         object: The configured model instance.
     """
 
     assert model_name in ["schnet", "visnet"]
-    assert stage in ["initial", "fgw"]
+    assert stage in ["conan_fgw_pre", "conan_fgw"]
 
     if "Classification" in config.experiment.model_class.__name__:
         train_ds = dataset_class("train", data_dir, config, dataset_idx)
@@ -66,14 +66,14 @@ def create_model(
         )
     else:
         ## Regression
-        if stage == "initial":
+        if stage == "conan_fgw_pre":
             model = config.experiment.model_class(
                 num_conformers=config.num_conformers,
                 batch_size=config.batch_size,
                 learning_rate=config.learning_rate,
                 model_name=model_name,
             )
-        elif stage == "fgw":
+        elif stage == "conan_fgw":
             model = config.experiment.model_class(
                 num_conformers=config.num_conformers,
                 batch_size=config.batch_size,
@@ -101,7 +101,7 @@ def main():
     run_name = cmd_args.run_name
     model_name = cmd_args.model_name
     run_id = cmd_args.run_id
-    initial_ckpt_dir = cmd_args.initial_ckpt_dir
+    conan_fgw_pre_ckpt_dir = cmd_args.conan_fgw_pre_ckpt_dir
 
     config_parser = config_yaml_parser()
     config = config_parser.instantiate_classes(config_parser.parse_path(f"{config_path}"))
@@ -154,21 +154,21 @@ def main():
             dataset_idx=dataset_idx,  # Index of the dataset to be used.
             is_distributed=is_distributed,  # Flag indicating if model training is distributed.
             model_name=model_name,  # Name of the model to be created. Options: ["schnet", "visnet"]
-            stage=stage,  # Stage of the experiment. Options: ["initial", "fgw"]
+            stage=stage,  # Stage of the experiment. Options: ["conan_fgw_pre", "conan_fgw"]
         )
 
-        if stage == "fgw":
-            # Get the path to the initial checkpoint for the fgw run
-            initial_ckpt_path = get_initial_ckpt(
-                initial_ckpt_dir=initial_ckpt_dir, run_idx=run_idx
+        if stage == "conan_fgw":
+            # Get the path to the conan_fgw_pre checkpoint for the fgw run
+            conan_fgw_pre_ckpt_path = get_conan_fgw_pre_ckpt(
+                conan_fgw_pre_ckpt_dir=conan_fgw_pre_ckpt_dir, run_idx=run_idx
             )
-            # If an initial checkpoint path is found, load the checkpoint
-            if initial_ckpt_path:
-                checkpoint = torch.load(initial_ckpt_path)
-                logger.info(f"Load best model of initial stage @: {initial_ckpt_path}")
+            # If an conan_fgw_pre checkpoint path is found, load the checkpoint
+            if conan_fgw_pre_ckpt_path:
+                checkpoint = torch.load(conan_fgw_pre_ckpt_path)
+                logger.info(f"Load best model of conan_fgw_pre stage @: {conan_fgw_pre_ckpt_path}")
                 model.load_state_dict(checkpoint["state_dict"])
             else:
-                logger.info(f"Training ConAN-FGW from scratch without loading initial checkpoint")
+                logger.info(f"Training ConAN-FGW from scratch without loading conan_fgw_pre checkpoint")
 
         trainer = trainer_holder.create_trainer(
             run_name=os.path.join(run_name, run_id, f"run_{stage}:" + str(run_idx))

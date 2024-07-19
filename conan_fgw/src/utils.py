@@ -49,26 +49,25 @@ def get_device(config, cuda_device):
     return device, is_distributed
 
 
-def get_initial_ckpt(initial_ckpt_dir: str, run_idx: str):
-    initial_ckpt_dir = os.path.join(initial_ckpt_dir, f"run_initial:{run_idx}")
-    ckpts = os.listdir(initial_ckpt_dir)
-    initial_ckpt_path = None
+def get_conan_fgw_pre_ckpt(conan_fgw_pre_ckpt_dir: str, run_idx: str):
+    conan_fgw_pre_ckpt_dir = os.path.join(conan_fgw_pre_ckpt_dir, f"run_conan_fgw_pre:{run_idx}")
+    ckpts = os.listdir(conan_fgw_pre_ckpt_dir)
+    conan_fgw_pre_ckpt_path = None
     for ckpt in ckpts:
         if ckpt.startswith("epoch"):
-            initial_ckpt_path = os.path.join(initial_ckpt_dir, ckpt)
-            return initial_ckpt_path
-    return initial_ckpt_path
+            conan_fgw_pre_ckpt_path = os.path.join(conan_fgw_pre_ckpt_dir, ckpt)
+            return conan_fgw_pre_ckpt_path
+    return conan_fgw_pre_ckpt_path
 
+regression = ["lipo", "esol", "freesolv", "lipo"]
+classification = ["sars_cov", "sars_cov_2_gen"]
 
 class AverageRuns:
     def __init__(self, config):
         self.config = config
         self.stats_table = PrettyTable()
-        task = (
-            "classfication"
-            if "Classification" in config.experiment.model_class.__name__
-            else "regression"
-        )
+        dataset_name = self.config.dataset_name[0]
+        task = "regression" if dataset_name in regression else "classification"
         if task == "regression":
             metric_name = TrainerHolder.regression_metric_name()
             self.stats_table.field_names = ["dataset", f"val_{metric_name}", f"test_{metric_name}"]

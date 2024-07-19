@@ -72,10 +72,10 @@ def cmd_args_parser() -> CmdArgsParser:
         --checkpoints_dir (str): Directory to save checkpoints.
         --logs_dir (str): Directory to save logs.
         --run_name (str): Name of the current run for tracking.
-        --stage (str, choices=["initial", "fgw"], default="initial"): Stage of the experiment.
+        --stage (str, choices=["conan_fgw_pre", "conan_fgw"], default="conan_fgw_pre"): Stage of the experiment.
         --run_id (str): ID of the current run.
         --model_name (str, choices=["schnet", "visnet"], default="schnet"): Name of the model to be created.
-        --initial_ckpt_dir (str, default=None): Directory of the initial checkpoint (if any).
+        --conan_fgw_pre_ckpt_dir (str, default=None): Directory of the conan_fgw_pre checkpoint (if any).
 
     Returns:
         ArgumentParser: Configured argument parser.
@@ -102,9 +102,9 @@ def cmd_args_parser() -> CmdArgsParser:
     cmd_args_parser.add_argument(
         "--stage",
         type=str,
-        choices=["initial", "fgw"],
-        default="initial",
-        help="Stage of the experiment (default: 'initial'). Available options are 'initial' and 'fgw'.",
+        choices=["conan_fgw_pre", "conan_fgw"],
+        default="conan_fgw_pre",
+        help="Stage of the experiment (default: 'conan_fgw_pre'). Available options are 'conan_fgw_pre' and 'conan_fgw'.",
     )
     cmd_args_parser.add_argument("--run_id", type=str, help="ID of the current run.")
     cmd_args_parser.add_argument(
@@ -115,7 +115,7 @@ def cmd_args_parser() -> CmdArgsParser:
         help="Name of the model to be created (default: 'schnet'). Available options are 'schnet' and 'visnet'.",
     )
     cmd_args_parser.add_argument(
-        "--initial_ckpt_dir", default=None, help="Directory of the initial checkpoint (if any)."
+        "--conan_fgw_pre_ckpt_dir", default=None, help="Directory of the conan_fgw_pre checkpoint (if any)."
     )
 
     return cmd_args_parser
