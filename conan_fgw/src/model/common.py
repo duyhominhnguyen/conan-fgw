@@ -438,8 +438,6 @@ class EquivAggregationClassification(MoleculeNetClassificationModel, metaclass=A
         self.conformers_mean_aggr = aggr.MeanAggregation()
 
     def get_predictions(self, batch):
-        ## TODO: add more sparsing
-        # if len(batch) == 2:
         batch, node_index = batch
         conformers_index = self.create_aggregation_index(batch)
         y_pred = self(batch, conformers_index, node_index)
@@ -459,7 +457,6 @@ class EquivAggregationClassification(MoleculeNetClassificationModel, metaclass=A
 
 
 class EquivModelsHolder:
-    # TODO: rewrite as enum
     @staticmethod
     def get_model(name: str, device, **kwargs):
         if name == "simple_dimenet":
@@ -506,17 +503,17 @@ class EquivModelsHolder:
             if "cutoff" in kwargs:
                 return SchNetNoSum(
                     device,
-                    hidden_channels=kwargs.get("feat_dim"),  ## 256
+                    hidden_channels=kwargs.get("feat_dim"),
                     use_covalent=False,
-                    cutoff=kwargs.get("cutoff"),  ## 5.0 -> 2 sars datasets
+                    cutoff=kwargs.get("cutoff"),
                     num_gaussians=10,
-                    num_filters=256,  # 128, # 64,
-                    num_interactions=3,  # 3
+                    num_filters=256,
+                    num_interactions=3,
                 )
             else:
                 return SchNetNoSum(
                     device,
-                    hidden_channels=kwargs.get("feat_dim"),  ## 256
+                    hidden_channels=kwargs.get("feat_dim"),
                     use_covalent=False,
                     num_interactions=3,
                 )
@@ -526,7 +523,7 @@ class EquivModelsHolder:
             return AverageConformerESAN(device)
         elif name == "gat":
             return GATBased(
-                out_channels=kwargs.get("feat_dim") // 2,  ## 128
+                out_channels=kwargs.get("feat_dim") // 2,
             )
         elif name == "geometry_induced_esan":
             return GeometryInducedESAN(device)
@@ -535,5 +532,5 @@ class EquivModelsHolder:
         elif name == "visnet":
             return ViSNet(
                 device,
-                hidden_channels=kwargs.get("feat_dim"),  ## 256
+                hidden_channels=kwargs.get("feat_dim"),
             )
