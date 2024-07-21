@@ -10,6 +10,6 @@ num_epochs: 200
 early_stopping:
   min_delta: 0.0001
   patience: 150
-learning_rate: 0.0005
-use_lr_finder: true
+learning_rate: 0.001
+use_lr_finder: false
 use_wandb: false

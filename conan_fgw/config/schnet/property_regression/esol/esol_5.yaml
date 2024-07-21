@@ -11,5 +11,5 @@ early_stopping:
   min_delta: 0.0001
   patience: 50
 learning_rate: 0.001 # LR to start with
-use_lr_finder: true
+use_lr_finder: false
 use_wandb: false

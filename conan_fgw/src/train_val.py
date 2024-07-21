@@ -160,7 +160,8 @@ def main():
         if stage == "conan_fgw":
             # Get the path to the conan_fgw_pre checkpoint for the fgw run
             conan_fgw_pre_ckpt_path = get_conan_fgw_pre_ckpt(
-                conan_fgw_pre_ckpt_dir=conan_fgw_pre_ckpt_dir, run_idx=run_idx
+                conan_fgw_pre_ckpt_dir=conan_fgw_pre_ckpt_dir,
+                # run_idx=run_idx
             )
             # If an conan_fgw_pre checkpoint path is found, load the checkpoint
             if conan_fgw_pre_ckpt_path:

@@ -15,21 +15,22 @@ DATE=$(date +"%Y-%m-%d-%T")
 # Define variables for the model, task, dataset, number of conformers, and number of runs
 model=schnet                      
 task=property_regression
-ds=lipo
-n_cfm=3
-runs=3
+ds=esol
+n_cfm_conan_fgw_pre=5
+n_cfm_conan_fgw=5
+runs=5
 
 # Set the visible CUDA devices to the first GPU for conan_fgw_pre training stage
 export CUDA_VISIBLE_DEVICES=0
 # Run the conan_fgw_pre training stage
 python conan_fgw/src/train_val.py \
-        --config_path=${WORKDIR}/conan_fgw/config/$model/$task/$ds/$ds\_$n_cfm.yaml \
+        --config_path=${WORKDIR}/conan_fgw/config/$model/$task/$ds/$ds\_$n_cfm_conan_fgw_pre.yaml \
         --cuda_device=0 \
         --data_root=${WORKDIR} \
         --number_of_runs=$runs \
         --checkpoints_dir=${WORKDIR}/models \
         --logs_dir=${WORKDIR}/outputs \
-        --run_name=$model\_$ds\_$n_cfm \
+        --run_name=$model\_$ds\_$n_cfm_conan_fgw_pre \
         --stage=conan_fgw_pre \
         --model_name=${model} \
         --run_id=$DATE
@@ -38,14 +39,14 @@ python conan_fgw/src/train_val.py \
 export CUDA_VISIBLE_DEVICES=0,1,2,3
 # Run the FGW (Fused Gromov-Wasserstein) training stage
 python conan_fgw/src/train_val.py \
-        --config_path=${WORKDIR}/conan_fgw/config/$model/$task/$ds/$ds\_$n_cfm\_bc.yaml \
+        --config_path=${WORKDIR}/conan_fgw/config/$model/$task/$ds/$ds\_$n_cfm_conan_fgw\_bc.yaml \
         --cuda_device=0 \
         --data_root=${WORKDIR} \
         --number_of_runs=$runs \
         --checkpoints_dir=${WORKDIR}/models \
         --logs_dir=${WORKDIR}/outputs \
-        --run_name=$model\_$ds\_$n_cfm \
+        --run_name=$model\_$ds\_$n_cfm_conan_fgw \
         --stage=conan_fgw \
         --model_name=${model} \
         --run_id=$DATE \
-        --conan_fgw_pre_ckpt_dir=${WORKDIR}/models/$model\_$ds\_$n_cfm/$DATE
+        --conan_fgw_pre_ckpt_dir=${WORKDIR}/models/$model\_$ds\_$n_cfm_conan_fgw_pre/$DATE

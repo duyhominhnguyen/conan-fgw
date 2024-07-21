@@ -10,7 +10,7 @@ export WORKDIR=$(pwd)
 # Add the working directory to the PYTHONPATH
 export PYTHONPATH="$WORKDIR:$PYTHONPATH"
 # Get the current date and time in the format YYYY-MM-DD-T
-DATE=2024-07-18-11:46:57
+DATE=2024-07-20-12:07:06
 
 # Define variables for the model, task, dataset, number of conformers, and number of runs
 model=schnet                      
