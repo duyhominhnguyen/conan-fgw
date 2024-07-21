@@ -49,7 +49,7 @@ def get_device(config, cuda_device):
     return device, is_distributed
 
 
-def get_conan_fgw_pre_ckpt(conan_fgw_pre_ckpt_dir: str, run_idx: str):
+def get_conan_fgw_pre_ckpt(conan_fgw_pre_ckpt_dir: str, run_idx: str = "0"):
     conan_fgw_pre_ckpt_dir = os.path.join(conan_fgw_pre_ckpt_dir, f"run_conan_fgw_pre:{run_idx}")
     ckpts = os.listdir(conan_fgw_pre_ckpt_dir)
     conan_fgw_pre_ckpt_path = None
