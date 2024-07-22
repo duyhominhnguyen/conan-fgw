@@ -140,8 +140,6 @@ class SchNetNoSum(SchNet):
             self.lin1_bary = torch.nn.Linear(
                 hidden_channels * 2, hidden_channels // 2
             )  # MLP for barycenter
-            # self.covalent_linear = torch.nn.Linear(COVALENT_BONDS_ATTRS_DIM, hidden_channels)
-            # self.assembled_linear = torch.nn.Linear(hidden_channels, hidden_channels)
 
     def forward(self, z: Tensor, pos: Tensor, batch: OptTensor = None, data_batch=None) -> Tensor:
         r"""
@@ -231,10 +229,6 @@ class SchNetNoSum(SchNet):
         h_bary = self.lin1_bary(h_shared)
         h_bary = self.lin2_bary(h_bary)
         h_bary = self.act(h_bary)
-
-        # if self.use_readout:
-        #     h = self.readout(h, batch, dim=0)
-        #     h_bary = self.readout(h_bary, batch, dim=0)
         return h, h_bary
 
     def _compute_barycenter(
@@ -255,7 +249,6 @@ class SchNetNoSum(SchNet):
         adj_dense = to_dense_adj(
             edge_index=edge_index,
             batch=batch,
-            # edge_attr=edge_attr
         )
         adj_dense_batch = get_adj_dense_batch(batch_size, num_conformers, adj_dense)
         F_bary_batch = torch.zeros(

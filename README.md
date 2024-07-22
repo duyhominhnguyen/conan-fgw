@@ -9,7 +9,7 @@
 - [Introduction](#introduction)
 - [Installation](#installation)
 - [Data](#data)
-- [Usage](#usage)
+- [Quickstart](#quickstart)
 
 ## Update
 :mega: **17 July 2024**: We release 1st version of codebase.
@@ -52,25 +52,32 @@ conda env update -n conan --file environment.yaml
 To refer benchmark datasets, please get access this link and download [here](https://mega.nz/folder/X9VEXb7D#xv6fXIon_00tgevNMZn73A).
 After finishing the download process, please put them into the directory ```/data```.
 
-## Usage
-The project focuses on leveraging four MoleculeNet datasets: Lipo, ESOL, FreeSolv, BACE, and two CoV-2 datasets. All relevant data is stored within the ```/data``` directory. To configure the settings for each dataset, corresponding configuration files are provided in the ```conan_fgw/config/``` folder.
+## Quickstart
+The project focuses on leveraging four MoleculeNet datasets: Esol, Lipo, FreeSolv, BACE, and two CoV-2 datasets. All relevant data is stored within the ```/data``` directory. To configure the settings for each dataset, corresponding configuration files are provided in the ```conan_fgw/config/``` folder.
 
 To reproduce experiments, please refer:
 ```bash
 bash conan_fgw/script/run.sh
 ```
 
-For example, to experiment with **ConAN** using the **SchNet** network as the backbone on the **Lipo** dataset, the script [run.sh](./conan_fgw/script/run.sh) should be as follows:
+For example, to experiment with **ConAN** using the **SchNet** network as the backbone on the **Esol** dataset, the script [run.sh](./conan_fgw/script/run.sh) should be as follows:
+
+First, define variables for the model, task, dataset, number of conformers, and number of runs:
 
 ```bash
 ## conan_fgw/script/run.sh
-# Check if the .env file exists
-if [ ! -f .env ]
-then
-  # If the .env file exists, export the environment variables defined in it
-  export $(cat .env | xargs)
-fi
+model=schnet                    ## Message Passing Backbone: schnet OR visnet
+task=property_regression        ## Molecular tasks: property_regression OR classification
+ds=esol                         ## Dataset name
+n_cfm_conan_fgw_pre=5           ## Number of conformers used in conan-fgw pretraining stage
+n_cfm_conan_fgw=5               ## Number of conformers used in conan-fgw training stage
+runs=5                          ## Number of runs for general evaluation
+```
 
+then, the rest of the bash script follows:
+
+```bash
+## conan_fgw/script/run.sh
 # Set the working directory to the current directory
 export WORKDIR=$(pwd)
 # Add the working directory to the PYTHONPATH
@@ -78,24 +85,17 @@ export PYTHONPATH="$WORKDIR:$PYTHONPATH"
 # Get the current date and time in the format YYYY-MM-DD-T
 DATE=$(date +"%Y-%m-%d-%T")
 
-# Define variables for the model, task, dataset, number of conformers, and number of runs
-model=schnet                      
-task=property_regression
-ds=lipo
-n_cfm=3
-runs=3
-
 # Set the visible CUDA devices to the first GPU for conan_fgw_pre training stage
 export CUDA_VISIBLE_DEVICES=0
 # Run the conan_fgw_pre training stage
 python conan_fgw/src/train_val.py \
-        --config_path=${WORKDIR}/conan_fgw/config/$model/$task/$ds/$ds\_$n_cfm.yaml \
+        --config_path=${WORKDIR}/conan_fgw/config/$model/$task/$ds/$ds\_$n_cfm_conan_fgw_pre.yaml \
         --cuda_device=0 \
         --data_root=${WORKDIR} \
         --number_of_runs=$runs \
         --checkpoints_dir=${WORKDIR}/models \
         --logs_dir=${WORKDIR}/outputs \
-        --run_name=$model\_$ds\_$n_cfm \
+        --run_name=$model\_$ds\_$n_cfm_conan_fgw_pre \
         --stage=conan_fgw_pre \
         --model_name=${model} \
         --run_id=$DATE
@@ -104,27 +104,95 @@ python conan_fgw/src/train_val.py \
 export CUDA_VISIBLE_DEVICES=0,1,2,3
 # Run the FGW (Fused Gromov-Wasserstein) training stage
 python conan_fgw/src/train_val.py \
-        --config_path=${WORKDIR}/conan_fgw/config/$model/$task/$ds/$ds\_$n_cfm\_bc.yaml \
+        --config_path=${WORKDIR}/conan_fgw/config/$model/$task/$ds/$ds\_$n_cfm_conan_fgw\_bc.yaml \
         --cuda_device=0 \
         --data_root=${WORKDIR} \
         --number_of_runs=$runs \
         --checkpoints_dir=${WORKDIR}/models \
         --logs_dir=${WORKDIR}/outputs \
-        --run_name=$model\_$ds\_$n_cfm \
+        --run_name=$model\_$ds\_$n_cfm_conan_fgw \
         --stage=conan_fgw \
         --model_name=${model} \
         --run_id=$DATE \
-        --conan_fgw_pre_ckpt_dir=${WORKDIR}/models/$model\_$ds\_$n_cfm/$DATE
+        --conan_fgw_pre_ckpt_dir=${WORKDIR}/models/$model\_$ds\_$n_cfm_conan_fgw_pre/$DATE
 ```
 
-For other experiments, we need to change the following group of arguments:
+For your reference, we provide an abstract of two model classes **SchNet** and **ViSNet** related to the ConAN-FGW model initialization and calculation for both ConAN-FGW ```pretraining``` and ```training``` stages:
 
-```bash
-model=<backbone_gnn_model>            ## Two backbone GNNs: schnet and visnet                      
-task=<molecular_task>                 ## Two main molecular tasks: property_regression and classification
-ds=<dataset_name>                     ## Four datasets for property_regression and two datasets for classification tasks
-n_cfm=<number_of_used_conformers>     ## Number of conformers used for extraction by 3D message passing networks
-runs=<number_of_exp_runs>             ## Number of runs for general evaluation
+**SchNet**
+```python
+## conan_fgw/src/model/graph_embeddings/schnet_no_sum.py
+from torch_geometric.nn import SchNet # The SchNet class used in ConAN is an extension of the SchNet class of torch_geometric
+class SchNetNoSum(SchNet):
+  def __init__(
+      self,
+      device, # The device on which the model will run (e.g., CPU or GPU).
+      hidden_channels: int = 128, # Number of hidden channels (default: 128).
+      num_filters: int = 128, # Number of filters (default: 128).
+      num_interactions: int = 6, # Number of interaction blocks (default: 6).
+      num_gaussians: int = 50,  # Number of Gaussians for distance expansion (default: 50).
+      cutoff: float = 10.0, # Cutoff distance for interactions (default: 10.0).
+      interaction_graph: Optional[Callable] = None, # Optional callable for defining the interaction graph.
+      max_num_neighbors: int = 32,  # Maximum number of neighbors for each atom (default: 32).
+      readout: str = "add", # Readout function, default is "add".
+      dipole: bool = False, # Whether to include dipole moment prediction (default: False).
+      mean: Optional[float] = None, # Mean and standard deviation for normalization.
+      std: Optional[float] = None,  
+      atomref: OptTensor = None,  # Atomic reference values for target properties.
+      use_covalent: bool = False, # Whether to use covalent bond information (default: False).
+      use_readout: bool = True, # Whether to use the readout layer (default: True).
+  ):
+    ## Initialization
+  def forward(
+    self,
+    z: Tensor,  # Atomic numbers of the atoms.
+    pos: Tensor,  # Coordinates of the atoms.
+    batch: OptTensor = None,  # Batch indices for separating molecules.
+    data_batch=None # Additional data, such as covalent bonds attributes.
+  ) -> Tensor:
+    ## Forward Pass without Barycenter Calculation
+    ## Returns: Tensor containing the computed features for each molecule.
+  def forward_3d_bary(
+    self,
+    z: Tensor,  # Atomic numbers of the atoms.
+    pos: Tensor,  # Coordinates of the atoms.
+    batch: OptTensor = None,  # Batch indices for separating molecules.
+    data_batch=None # Additional data, such as covalent bonds attributes.
+  ) -> Tensor
+    ## Forward Pass with Bary Center Calculation
+    ## Returns: Two tensors, one for standard 3D aggregation and one for barycenter aggregation.
+```
+
+**ViSNet**
+```python
+## conan_fgw/src/model/graph_embeddings/visnet.py
+from torch_geometric.nn.models.visnet import ViSNet as NaiveViSNet # The ViSNet class used in ConAN is an extension of the ViSNet class of torch_geometric
+class ViSNet(NaiveViSNet):
+  def __init__(
+    self,
+    device, # The device on which the model will run (e.g., CPU or GPU).
+    hidden_channels: int, # Number of hidden channels in the model.
+    cutoff: float = 5.0 # Distance cutoff for interaction graph construction.
+  ):
+    ## Initialization
+  def forward(
+    self,
+    z: Tensor,  # Atomic numbers of the atoms.
+    pos: Tensor,  # Coordinates of the atoms.
+    batch: OptTensor = None,  # Batch indices for separating molecules.
+    data_batch=None # Additional data, such as covalent bonds attributes.
+  ) -> Tensor:
+    ## Forward Pass without Barycenter Calculation
+    ## Returns: Tensor containing the computed features for each molecule.
+  def forward_3d_bary(
+    self,
+    z: Tensor,  # Atomic numbers of the atoms.
+    pos: Tensor,  # Coordinates of the atoms.
+    batch: OptTensor = None,  # Batch indices for separating molecules.
+    data_batch=None # Additional data, such as covalent bonds attributes.
+  ) -> Tensor
+    ## Forward Pass with Bary Center Calculation
+    ## Returns: Two tensors, one for standard 3D aggregation and one for barycenter aggregation.
 ```
 
 ## Citation

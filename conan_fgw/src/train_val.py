@@ -63,6 +63,7 @@ def create_model(
             class_weights=class_weights,
             is_distributed=is_distributed,
             trade_off=config.trade_off,
+            agg_weight=config.agg_weight
         )
     else:
         ## Regression
@@ -82,6 +83,7 @@ def create_model(
                 is_distributed=is_distributed,
                 max_iter=config.max_iter,
                 epsilon=config.epsilon,
+                agg_weight=config.agg_weight
             )
 
     # Generating dummy data if the model is distributed
@@ -114,6 +116,8 @@ def main():
     )
 
     metric_logger = AverageRuns(config=config)
+
+    number_of_runs = number_of_runs if stage == "conan_fgw" else 1
 
     for run_idx in range(number_of_runs):
 
@@ -179,7 +183,7 @@ def main():
             # Learning rate finder
             tuner = Tuner(trainer)
             tuner.lr_find(model, datamodule=data_module)
-
+        logger.info(f"learning_rate: {model.learning_rate}")
         trainer.fit(model=model, datamodule=data_module)
         metric_logger._register_metric(trainer, stage="train_val")
         trainer.test(model=model, datamodule=data_module, ckpt_path="best")

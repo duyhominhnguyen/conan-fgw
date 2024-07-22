@@ -13,11 +13,11 @@ export PYTHONPATH="$WORKDIR:$PYTHONPATH"
 DATE=$(date +"%Y-%m-%d-%T")
 
 # Define variables for the model, task, dataset, number of conformers, and number of runs
-model=schnet                      
+model=visnet                      
 task=property_regression
-ds=lipo
+ds=esol
 n_cfm=5
-runs=5
+runs=1
 
 # Set the visible CUDA devices to the first GPU for conan_fgw_pre training stage
 export CUDA_VISIBLE_DEVICES=3
