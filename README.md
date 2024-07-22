@@ -74,6 +74,47 @@ n_cfm_conan_fgw=5               ## Number of conformers used in conan-fgw traini
 runs=5                          ## Number of runs for general evaluation
 ```
 
+**Note**: Please refer to the configurations for a certain experiment. They should be available at `conan_fgw/config/<selected_model>/<molecular_task>/<dataset_name>`. In this case, there are two configuration YAML files named `esol_5_bc.yaml` and `esol_5.yaml` in the directory `conan_fgw/config/schnet/property_regression/esol/`:
+
+```yml
+## esol_5.yaml
+disable_distribution: true  # Disable distribution of the data across multiple devices or nodes.
+dataset_name: ['esol']  # List of dataset names to be used. Here, it's the ESOL dataset.
+dummy_size: -1  # Size of a dummy dataset for testing. -1 indicates not using a dummy dataset.
+target: ['measured_log_sol']  # Target property to predict, here it's the measured log solubility.
+num_conformers: 5  # Number of conformers to generate per molecule.
+prune_conformers: false  # Whether to prune conformers to a smaller set.
+batch_size: 96  # Number of samples per batch during training.
+experiment: conan_fgw.src.experiments.SOTAExperiment  # Path to the experiment class used for training.
+num_epochs: 150  # Total number of training epochs.
+early_stopping:  # Early stopping configuration to prevent overfitting.
+  min_delta: 0.0001  # Minimum change in the monitored metric to qualify as an improvement.
+  patience: 50  # Number of epochs with no improvement after which training will be stopped.
+learning_rate: 0.001  # Initial learning rate for training.
+use_lr_finder: false  # Whether to use a learning rate finder to automatically adjust the learning rate.
+use_wandb: false  # Whether to use Weights & Biases for experiment tracking.
+```
+
+```yml
+## esol_5_bc.yaml
+disable_distribution: false  # Whether to disable distribution of the data across multiple devices or nodes.
+dataset_name: ['esol']  # List of dataset names to be used. Here, it's the ESOL dataset.
+dummy_size: -1  # Size of a dummy dataset for testing. -1 indicates not using a dummy dataset.
+target: ['measured_log_sol']  # Target property to predict, here it's the measured log solubility.
+num_conformers: 5  # Number of conformers to generate per molecule.
+prune_conformers: false  # Whether to prune conformers to a smaller set.
+batch_size: 24  # Number of samples per batch during training.
+experiment: conan_fgw.src.experiments.SOTAExperimentBaryCenter  # Path to the experiment class used for training.
+num_epochs: 80  # Total number of training epochs.
+early_stopping:  # Early stopping configuration to prevent overfitting.
+  min_delta: 0.0001  # Minimum change in the monitored metric to qualify as an improvement.
+  patience: 50  # Number of epochs with no improvement after which training will be stopped.
+learning_rate: 0.0005  # Initial learning rate for training.
+use_lr_finder: false  # Whether to use a learning rate finder to automatically adjust the learning rate.
+use_wandb: false  # Whether to use Weights & Biases for experiment tracking.
+agg_weight: 0.2  # Aggregation weight for combining different terms or losses.
+```
+
 then, the rest of the bash script follows:
 
 ```bash
