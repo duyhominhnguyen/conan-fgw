@@ -149,7 +149,7 @@ agg_weight: 0.2  # Aggregation weight for combining different terms or losses.
 
 then, the rest of the bash script follows:
 
-1. Run the conan_fgw_pre training stage
+1. Run the ConAN-FGW pretraining stage
 ```bash
 export CUDA_VISIBLE_DEVICES=0
 python conan_fgw/src/train_val.py \
@@ -164,7 +164,7 @@ python conan_fgw/src/train_val.py \
     --model_name=${model} \
     --run_id=${DATE}
 ```
-2. Run the FGW (Fused Gromov-Wasserstein) training stage
+2. Run the ConAN-FGW training stage
 
 ```bash
 export CUDA_VISIBLE_DEVICES=0,1,2,3
