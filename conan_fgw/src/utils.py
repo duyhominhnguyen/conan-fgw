@@ -6,6 +6,7 @@ from prettytable import PrettyTable
 from conan_fgw.src.trainer import TrainerHolder
 import numpy as np
 
+logger = logging.getLogger("ConAN")
 
 def build_logger(logger_name: str, logger_filename: str):
     global handler
@@ -109,7 +110,7 @@ class AverageRuns:
                     self.monitor_metrics[m_name].append(metric)
                 else:
                     continue
-
+        logger.info(f"Register Metrics: {self.monitor_metrics}")
     def get_avg_metric(self):
         list_avg = [self.config.dataset_name[0]]
         for i in range(1, len(self.stats_table.field_names)):

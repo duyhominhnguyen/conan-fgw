@@ -76,8 +76,6 @@ class EmbeddingsAggregation(EquivAggregation):
 
     def forward(self, batch, conformers_index, node_index):
         x: torch.Tensor = self.node_embeddings_model(batch.z, batch.pos, node_index)
-        # x = self.molecular_regression_lin(x)
-        # x = self.conformers_mean_aggr(x, conformers_index)
         x = self.conformers_mean_aggr(x, conformers_index)
         x = self.molecular_regression_lin(x)
         return x
@@ -106,6 +104,10 @@ class EmbeddingsWithGATAggregationBaryCenter(EquivAggregation):
             self.numItermax = kwargs.get("max_iter")
         if "epsilon" in kwargs:
             self.epsilon = kwargs.get("epsilon")
+
+        self.agg_weight=0.2
+        if "agg_weight" in kwargs:
+            self.agg_weight = kwargs.get("agg_weight")
 
     def forward_dummy(self, batch, conformers_index, node_index):
         """
@@ -165,8 +167,7 @@ class EmbeddingsWithGATAggregationBaryCenter(EquivAggregation):
             batch.x, batch.edge_index, batch.edge_attr, batch.batch
         )
         x_covalent = self.transformation_matrix_cov(x_covalent)
-        w1 = 0.2
-        x = x_3d + x_covalent + w1 * x_bary
+        x = x_3d + x_covalent + self.agg_weight * x_bary
         x = self.conformers_mean_aggr(x, conformers_index)
         x = self.molecular_regression_lin(x)
         return x
@@ -330,11 +331,12 @@ class EmbeddingsWithGATAggregationClassificationBaryCenter(EquivAggregationClass
         self.transformation_matrix_3d = Linear(out_channels, out_channels)
         self.transformation_matrix_cov = Linear(out_channels, out_channels)
         self.transformation_matrix_bary = Linear(out_channels, out_channels)
-        # self.molecular_regression_lin = Linear(out_channels, 1)     ## << out_channels=64
         ## build MLP to enhance the classification problem
-        # self.molecular_regression_lin = build_mlp(out_channels, is_complex=True)
         self.molecular_regression_lin = build_mlp_class(out_channels, is_complex=True)
         self.self_attention = SelfAttention(out_channels)
+        self.agg_weight=0.2
+        if "agg_weight" in kwargs:
+            self.agg_weight = kwargs.get("agg_weight")
 
     def forward_dummy(self, batch, conformers_index, node_index):
         x_3d: torch.Tensor = self.node_embeddings_model(batch.z, batch.pos, node_index)
@@ -358,15 +360,9 @@ class EmbeddingsWithGATAggregationClassificationBaryCenter(EquivAggregationClass
             batch.x, batch.edge_index, batch.edge_attr, batch.batch
         )
         x_covalent = self.transformation_matrix_cov(x_covalent)
-        w = 0.2
-        x = x_3d + x_covalent + w * x_bary  ## << aggregation is here
 
-        # x = torch.unsqueeze(x, dim=1)
-        # x = self.self_attention(x)
-        # x = torch.squeeze(x, dim=1)
-
+        x = x_3d + x_covalent + self.agg_weight * x_bary
         x = self.conformers_mean_aggr(x, conformers_index)
-
         x = self.molecular_regression_lin(x)
         x = torch.sigmoid(x)
 

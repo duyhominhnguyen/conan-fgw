@@ -2,33 +2,15 @@ from typing import Optional, Callable, Tuple
 import torch
 from torch import Tensor, LongTensor
 from torch.nn import ModuleList
-from torch_geometric.nn import SchNet, aggr, radius_graph
-
 # from torch_geometric.nn.models.visnet import ViSNet as NaiveViSNet
 from conan_fgw.src.model.graph_embeddings.torch_geometric_visnet import ViSNet as NaiveViSNet
-from conan_fgw.src.model.graph_embeddings.torch_geometric_visnet import ViSNetBlock
-from torch_geometric.nn.models.schnet import InteractionBlock, GaussianSmearing
 from torch_geometric.typing import OptTensor
 from torch_geometric.utils import to_dense_adj, to_dense_batch, scatter
 from torch_geometric.nn.resolver import aggregation_resolver as aggr_resolver
-
 from torch_geometric.nn.models.schnet import RadiusInteractionGraph
 from conan_fgw.src.model.fgw.barycenter import fgw_barycenters, normalize_tensor
-from tqdm import tqdm
 import torch.nn.functional as F
-import random
-import pickle
-import os
-import numpy as np
-import time
-import uuid
-import pandas as pd
-import shutil
 from torch import linalg as LA
-from torch.nn import Embedding, LayerNorm, Linear
-
-COVALENT_BONDS_ATTRS_DIM = 3
-
 
 def get_list_node_features(out, mask):
     """
@@ -96,26 +78,6 @@ def get_adj_dense_batch(batch_size, num_conformers, adj_dense):
 
 
 class ViSNet(NaiveViSNet):
-    """
-    lmax: int = 1,
-    vecnorm_type: Optional[str] = None,
-    trainable_vecnorm: bool = False,
-    num_heads: int = 8,
-    num_layers: int = 6,
-    hidden_channels: int = 128,
-    num_rbf: int = 32,
-    trainable_rbf: bool = False,
-    max_z: int = 100,
-    cutoff: float = 5.0,
-    max_num_neighbors: int = 32,
-    vertex: bool = False,
-    atomref: Optional[Tensor] = None,
-    reduce_op: str = "sum",
-    mean: float = 0.0,
-    std: float = 1.0,
-    derivative: bool = False,
-    """
-
     def __init__(self, device, hidden_channels: int, cutoff: float = 5.0):
         super().__init__(
             hidden_channels=hidden_channels,
