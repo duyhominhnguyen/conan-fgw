@@ -1,5 +1,29 @@
-# Structure-Aware E(3)-Invariant Molecular Conformer Aggregation Networks (ICML 2024)
-:fire: :fire: This repository contains PyTorch implementation for our paper: **Structure-Aware E(3)-Invariant Molecular Conformer Aggregation Networks [[arXiv]](https://arxiv.org/abs/2402.01975)**.
+<h4 align="center">
+    <img alt="ConAN logo" src="docs/images/conan.png" style="width: 100%;">
+</h4>
+
+<p align="center">
+    <a href="https://lightning.ai/docs/pytorch/stable">
+        <img alt="Pytorch Lightning" src="https://img.shields.io/badge/pytorch-lightning-blue.svg?logo=PyTorch%20Lightning">
+    </a>
+    <a href="https://star-history.com/#duyhominhnguyen/conan-fgw">
+        <img alt="GitHub stars" src="https://img.shields.io/github/stars/duyhominhnguyen/conan-fgw?style=flat-square">
+    </a>
+    <a href="https://github.com/duyhominhnguyen/conan-fgw/issues">
+        <img alt="Open Issues" src="https://img.shields.io/github/issues-raw/duyhominhnguyen/conan-fgw?style=flat-square">
+    </a>
+    <a href="https://opensource.org/license/MIT">
+        <img alt="License" src="https://img.shields.io/github/license/duyhominhnguyen/conan-fgw">
+    </a>
+</p>
+
+<h1>
+    <p align="center">
+        Structure-Aware E(3)-Invariant Molecular Conformer Aggregation Networks
+    </p>
+</h1>
+
+:fire: :fire: This repository contains PyTorch implementation for our paper: **Structure-Aware E(3)-Invariant Molecular Conformer Aggregation Networks (ICML 2024) [[arXiv]](https://arxiv.org/abs/2402.01975)**.
 
 ![Overview figure](figs/ala.png)
 
@@ -74,7 +98,10 @@ n_cfm_conan_fgw=5               ## Number of conformers used in conan-fgw traini
 runs=5                          ## Number of runs for general evaluation
 ```
 
-**Note**: Please refer to the configurations for a certain experiment. They should be available at `conan_fgw/config/<selected_model>/<molecular_task>/<dataset_name>`. In this case, there are two configuration YAML files named `esol_5_bc.yaml` and `esol_5.yaml` in the directory `conan_fgw/config/schnet/property_regression/esol/`:
+**Note**: Please refer to the configurations for a certain experiment. They should be available at `conan_fgw/config/<selected_model>/<molecular_task>/<dataset_name>`. In this case, there are two configuration YAML files named `esol_5.yaml` and `esol_5_bc.yaml` in the directory `conan_fgw/config/schnet/property_regression/esol/`:
+
+<details>
+  <summary><i>esol_5.yaml</i></summary>
 
 ```yml
 ## esol_5.yaml
@@ -94,6 +121,10 @@ learning_rate: 0.001  # Initial learning rate for training.
 use_lr_finder: false  # Whether to use a learning rate finder to automatically adjust the learning rate.
 use_wandb: false  # Whether to use Weights & Biases for experiment tracking.
 ```
+</details>
+
+<details>
+  <summary><i>esol_5_bc.yaml</i></summary>
 
 ```yml
 ## esol_5_bc.yaml
@@ -114,53 +145,92 @@ use_lr_finder: false  # Whether to use a learning rate finder to automatically a
 use_wandb: false  # Whether to use Weights & Biases for experiment tracking.
 agg_weight: 0.2  # Aggregation weight for combining different terms or losses.
 ```
+</details>
 
 then, the rest of the bash script follows:
 
+1. Run the conan_fgw_pre training stage
+```bash
+export CUDA_VISIBLE_DEVICES=0
+python conan_fgw/src/train_val.py \
+    --config_path=${WORKDIR}/conan_fgw/config/${model}/${task}/${ds}/${ds}_${n_cfm}_conan_fgw_pre.yaml \
+    --cuda_device=0 \
+    --data_root=${WORKDIR} \
+    --number_of_runs=${runs} \
+    --checkpoints_dir=${WORKDIR}/models \
+    --logs_dir=${WORKDIR}/outputs \
+    --run_name=${model}_${ds}_${n_cfm}_conan_fgw_pre \
+    --stage=conan_fgw_pre \
+    --model_name=${model} \
+    --run_id=${DATE}
+```
+2. Run the FGW (Fused Gromov-Wasserstein) training stage
+
+```bash
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+python conan_fgw/src/train_val.py \
+    --config_path=${WORKDIR}/conan_fgw/config/${model}/${task}/${ds}/${ds}_${n_cfm}_conan_fgw_bc.yaml \
+    --cuda_device=0 \
+    --data_root=${WORKDIR} \
+    --number_of_runs=${runs} \
+    --checkpoints_dir=${WORKDIR}/models \
+    --logs_dir=${WORKDIR}/outputs \
+    --run_name=${model}_${ds}_${n_cfm}_conan_fgw \
+    --stage=conan_fgw \
+    --model_name=${model} \
+    --run_id=${DATE} \
+    --conan_fgw_pre_ckpt_dir=${WORKDIR}/models/${model}_${ds}_${n_cfm}_conan_fgw_pre/${DATE}
+```
+
+<details>
+  <summary><b>Full Script</b></summary>
+
 ```bash
 ## conan_fgw/script/run.sh
-# Set the working directory to the current directory
+## Set the working directory to the current directory
 export WORKDIR=$(pwd)
-# Add the working directory to the PYTHONPATH
+## Add the working directory to the PYTHONPATH
 export PYTHONPATH="$WORKDIR:$PYTHONPATH"
-# Get the current date and time in the format YYYY-MM-DD-T
-DATE=$(date +"%Y-%m-%d-%T")
-
-# Set the visible CUDA devices to the first GPU for conan_fgw_pre training stage
+## Get the current date and time in the format YYYY-MM-DD-HH-MM-SS
+DATE=$(date +"%Y-%m-%d-%H-%M-%S")
+## Set the visible CUDA devices to the first GPU for conan_fgw_pre training stage
 export CUDA_VISIBLE_DEVICES=0
-# Run the conan_fgw_pre training stage
+## Run the conan_fgw_pre training stage
 python conan_fgw/src/train_val.py \
-        --config_path=${WORKDIR}/conan_fgw/config/$model/$task/$ds/$ds\_$n_cfm_conan_fgw_pre.yaml \
-        --cuda_device=0 \
-        --data_root=${WORKDIR} \
-        --number_of_runs=$runs \
-        --checkpoints_dir=${WORKDIR}/models \
-        --logs_dir=${WORKDIR}/outputs \
-        --run_name=$model\_$ds\_$n_cfm_conan_fgw_pre \
-        --stage=conan_fgw_pre \
-        --model_name=${model} \
-        --run_id=$DATE
-
-# Set the visible CUDA devices to GPUs 0, 1, 2, and 3 for using Distributed Data Parallel
+    --config_path=${WORKDIR}/conan_fgw/config/${model}/${task}/${ds}/${ds}_${n_cfm}_conan_fgw_pre.yaml \
+    --cuda_device=0 \
+    --data_root=${WORKDIR} \
+    --number_of_runs=${runs} \
+    --checkpoints_dir=${WORKDIR}/models \
+    --logs_dir=${WORKDIR}/outputs \
+    --run_name=${model}_${ds}_${n_cfm}_conan_fgw_pre \
+    --stage=conan_fgw_pre \
+    --model_name=${model} \
+    --run_id=${DATE}
+## Set the visible CUDA devices to GPUs 0, 1, 2, and 3 for using Distributed Data Parallel
 export CUDA_VISIBLE_DEVICES=0,1,2,3
-# Run the FGW (Fused Gromov-Wasserstein) training stage
+## Run the FGW (Fused Gromov-Wasserstein) training stage
 python conan_fgw/src/train_val.py \
-        --config_path=${WORKDIR}/conan_fgw/config/$model/$task/$ds/$ds\_$n_cfm_conan_fgw\_bc.yaml \
-        --cuda_device=0 \
-        --data_root=${WORKDIR} \
-        --number_of_runs=$runs \
-        --checkpoints_dir=${WORKDIR}/models \
-        --logs_dir=${WORKDIR}/outputs \
-        --run_name=$model\_$ds\_$n_cfm_conan_fgw \
-        --stage=conan_fgw \
-        --model_name=${model} \
-        --run_id=$DATE \
-        --conan_fgw_pre_ckpt_dir=${WORKDIR}/models/$model\_$ds\_$n_cfm_conan_fgw_pre/$DATE
+    --config_path=${WORKDIR}/conan_fgw/config/${model}/${task}/${ds}/${ds}_${n_cfm}_conan_fgw_bc.yaml \
+    --cuda_device=0 \
+    --data_root=${WORKDIR} \
+    --number_of_runs=${runs} \
+    --checkpoints_dir=${WORKDIR}/models \
+    --logs_dir=${WORKDIR}/outputs \
+    --run_name=${model}_${ds}_${n_cfm}_conan_fgw \
+    --stage=conan_fgw \
+    --model_name=${model} \
+    --run_id=${DATE} \
+    --conan_fgw_pre_ckpt_dir=${WORKDIR}/models/${model}_${ds}_${n_cfm}_conan_fgw_pre/${DATE}
 ```
+
+</details>
 
 For your reference, we provide an abstract of two model classes **SchNet** and **ViSNet** related to the ConAN-FGW model initialization and calculation for both ConAN-FGW ```pretraining``` and ```training``` stages:
 
-**SchNet**
+<details>
+  <summary><b>SchNet</b></summary>
+
 ```python
 ## conan_fgw/src/model/graph_embeddings/schnet_no_sum.py
 from torch_geometric.nn import SchNet # The SchNet class used in ConAN is an extension of the SchNet class of torch_geometric
@@ -203,8 +273,12 @@ class SchNetNoSum(SchNet):
     ## Forward Pass with Bary Center Calculation
     ## Returns: Two tensors, one for standard 3D aggregation and one for barycenter aggregation.
 ```
+</details>
 
-**ViSNet**
+
+<details>
+  <summary><b>ViSNet</b></summary>
+
 ```python
 ## conan_fgw/src/model/graph_embeddings/visnet.py
 from torch_geometric.nn.models.visnet import ViSNet as NaiveViSNet # The ViSNet class used in ConAN is an extension of the ViSNet class of torch_geometric
@@ -235,6 +309,7 @@ class ViSNet(NaiveViSNet):
     ## Forward Pass with Bary Center Calculation
     ## Returns: Two tensors, one for standard 3D aggregation and one for barycenter aggregation.
 ```
+</details>
 
 ## Citation
 Please cite this paper if it helps your research:
