@@ -100,7 +100,8 @@ runs=5                          ## Number of runs for general evaluation
 
 **Note**: Please refer to the configurations for a certain experiment. They should be available at `conan_fgw/config/<selected_model>/<molecular_task>/<dataset_name>`. In this case, there are two configuration YAML files named `esol_5_bc.yaml` and `esol_5.yaml` in the directory `conan_fgw/config/schnet/property_regression/esol/`:
 
-```yml
+<div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; background-color: #f9f9f9;">
+<pre><code>
 ## esol_5.yaml
 disable_distribution: true  # Disable distribution of the data across multiple devices or nodes.
 dataset_name: ['esol']  # List of dataset names to be used. Here, it's the ESOL dataset.
@@ -117,9 +118,14 @@ early_stopping:  # Early stopping configuration to prevent overfitting.
 learning_rate: 0.001  # Initial learning rate for training.
 use_lr_finder: false  # Whether to use a learning rate finder to automatically adjust the learning rate.
 use_wandb: false  # Whether to use Weights & Biases for experiment tracking.
-```
+</code></pre>
+</div>
 
-```yml
+
+</br>
+
+<div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; background-color: #f9f9f9;">
+<pre><code>
 ## esol_5_bc.yaml
 disable_distribution: false  # Whether to disable distribution of the data across multiple devices or nodes.
 dataset_name: ['esol']  # List of dataset names to be used. Here, it's the ESOL dataset.
@@ -137,50 +143,80 @@ learning_rate: 0.0005  # Initial learning rate for training.
 use_lr_finder: false  # Whether to use a learning rate finder to automatically adjust the learning rate.
 use_wandb: false  # Whether to use Weights & Biases for experiment tracking.
 agg_weight: 0.2  # Aggregation weight for combining different terms or losses.
-```
+</code></pre>
+</div>
+
+</br>
 
 then, the rest of the bash script follows:
 
-```bash
+<div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; background-color: #f9f9f9; position: relative;">
+    <style>
+        .python-code {
+            font-family: monospace;
+            white-space: pre-wrap; /* Ensure the code wraps correctly */
+        }
+        .python-keyword { color: #0076d6; font-weight: bold; }
+        .python-comment { color: #6a737d; }
+        .python-string { color: #e46c0a; }
+        .python-function { color: #005cc5; }
+        .python-identifier { color: #24292e; }
+        .copy-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .copy-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+    <button class="copy-button" onclick="copyCode()">Copy</button>
+    <pre id="code-block" class="python-code"><code>
 ## conan_fgw/script/run.sh
-# Set the working directory to the current directory
+## Set the working directory to the current directory
 export WORKDIR=$(pwd)
-# Add the working directory to the PYTHONPATH
+## Add the working directory to the PYTHONPATH
 export PYTHONPATH="$WORKDIR:$PYTHONPATH"
-# Get the current date and time in the format YYYY-MM-DD-T
-DATE=$(date +"%Y-%m-%d-%T")
-
-# Set the visible CUDA devices to the first GPU for conan_fgw_pre training stage
+## Get the current date and time in the format YYYY-MM-DD-HH-MM-SS
+DATE=$(date +"%Y-%m-%d-%H-%M-%S")
+## Set the visible CUDA devices to the first GPU for conan_fgw_pre training stage
 export CUDA_VISIBLE_DEVICES=0
-# Run the conan_fgw_pre training stage
+## Run the conan_fgw_pre training stage
 python conan_fgw/src/train_val.py \
-        --config_path=${WORKDIR}/conan_fgw/config/$model/$task/$ds/$ds\_$n_cfm_conan_fgw_pre.yaml \
-        --cuda_device=0 \
-        --data_root=${WORKDIR} \
-        --number_of_runs=$runs \
-        --checkpoints_dir=${WORKDIR}/models \
-        --logs_dir=${WORKDIR}/outputs \
-        --run_name=$model\_$ds\_$n_cfm_conan_fgw_pre \
-        --stage=conan_fgw_pre \
-        --model_name=${model} \
-        --run_id=$DATE
-
-# Set the visible CUDA devices to GPUs 0, 1, 2, and 3 for using Distributed Data Parallel
+    --config_path=${WORKDIR}/conan_fgw/config/${model}/${task}/${ds}/${ds}_${n_cfm}_conan_fgw_pre.yaml \
+    --cuda_device=0 \
+    --data_root=${WORKDIR} \
+    --number_of_runs=${runs} \
+    --checkpoints_dir=${WORKDIR}/models \
+    --logs_dir=${WORKDIR}/outputs \
+    --run_name=${model}_${ds}_${n_cfm}_conan_fgw_pre \
+    --stage=conan_fgw_pre \
+    --model_name=${model} \
+    --run_id=${DATE}
+## Set the visible CUDA devices to GPUs 0, 1, 2, and 3 for using Distributed Data Parallel
 export CUDA_VISIBLE_DEVICES=0,1,2,3
-# Run the FGW (Fused Gromov-Wasserstein) training stage
+## Run the FGW (Fused Gromov-Wasserstein) training stage
 python conan_fgw/src/train_val.py \
-        --config_path=${WORKDIR}/conan_fgw/config/$model/$task/$ds/$ds\_$n_cfm_conan_fgw\_bc.yaml \
-        --cuda_device=0 \
-        --data_root=${WORKDIR} \
-        --number_of_runs=$runs \
-        --checkpoints_dir=${WORKDIR}/models \
-        --logs_dir=${WORKDIR}/outputs \
-        --run_name=$model\_$ds\_$n_cfm_conan_fgw \
-        --stage=conan_fgw \
-        --model_name=${model} \
-        --run_id=$DATE \
-        --conan_fgw_pre_ckpt_dir=${WORKDIR}/models/$model\_$ds\_$n_cfm_conan_fgw_pre/$DATE
-```
+    --config_path=${WORKDIR}/conan_fgw/config/${model}/${task}/${ds}/${ds}_${n_cfm}_conan_fgw_bc.yaml \
+    --cuda_device=0 \
+    --data_root=${WORKDIR} \
+    --number_of_runs=${runs} \
+    --checkpoints_dir=${WORKDIR}/models \
+    --logs_dir=${WORKDIR}/outputs \
+    --run_name=${model}_${ds}_${n_cfm}_conan_fgw \
+    --stage=conan_fgw \
+    --model_name=${model} \
+    --run_id=${DATE} \
+    --conan_fgw_pre_ckpt_dir=${WORKDIR}/models/${model}_${ds}_${n_cfm}_conan_fgw_pre/${DATE}
+</code></pre>
+</div>
+
 
 For your reference, we provide an abstract of two model classes **SchNet** and **ViSNet** related to the ConAN-FGW model initialization and calculation for both ConAN-FGW ```pretraining``` and ```training``` stages:
 
