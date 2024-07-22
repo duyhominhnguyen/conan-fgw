@@ -98,10 +98,12 @@ n_cfm_conan_fgw=5               ## Number of conformers used in conan-fgw traini
 runs=5                          ## Number of runs for general evaluation
 ```
 
-**Note**: Please refer to the configurations for a certain experiment. They should be available at `conan_fgw/config/<selected_model>/<molecular_task>/<dataset_name>`. In this case, there are two configuration YAML files named `esol_5_bc.yaml` and `esol_5.yaml` in the directory `conan_fgw/config/schnet/property_regression/esol/`:
+**Note**: Please refer to the configurations for a certain experiment. They should be available at `conan_fgw/config/<selected_model>/<molecular_task>/<dataset_name>`. In this case, there are two configuration YAML files named `esol_5.yaml` and `esol_5_bc.yaml` in the directory `conan_fgw/config/schnet/property_regression/esol/`:
 
-<div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; background-color: #f9f9f9;">
-<pre><code>
+<details>
+  <summary><i>esol_5.yaml</i></summary>
+
+```yml
 ## esol_5.yaml
 disable_distribution: true  # Disable distribution of the data across multiple devices or nodes.
 dataset_name: ['esol']  # List of dataset names to be used. Here, it's the ESOL dataset.
@@ -118,14 +120,13 @@ early_stopping:  # Early stopping configuration to prevent overfitting.
 learning_rate: 0.001  # Initial learning rate for training.
 use_lr_finder: false  # Whether to use a learning rate finder to automatically adjust the learning rate.
 use_wandb: false  # Whether to use Weights & Biases for experiment tracking.
-</code></pre>
-</div>
+```
+</details>
 
+<details>
+  <summary><i>esol_5_bc.yaml</i></summary>
 
-</br>
-
-<div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; background-color: #f9f9f9;">
-<pre><code>
+```yml
 ## esol_5_bc.yaml
 disable_distribution: false  # Whether to disable distribution of the data across multiple devices or nodes.
 dataset_name: ['esol']  # List of dataset names to be used. Here, it's the ESOL dataset.
@@ -143,41 +144,48 @@ learning_rate: 0.0005  # Initial learning rate for training.
 use_lr_finder: false  # Whether to use a learning rate finder to automatically adjust the learning rate.
 use_wandb: false  # Whether to use Weights & Biases for experiment tracking.
 agg_weight: 0.2  # Aggregation weight for combining different terms or losses.
-</code></pre>
-</div>
-
-</br>
+```
+</details>
 
 then, the rest of the bash script follows:
 
-<div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; background-color: #f9f9f9; position: relative;">
-    <style>
-        .python-code {
-            font-family: monospace;
-            white-space: pre-wrap; /* Ensure the code wraps correctly */
-        }
-        .python-keyword { color: #0076d6; font-weight: bold; }
-        .python-comment { color: #6a737d; }
-        .python-string { color: #e46c0a; }
-        .python-function { color: #005cc5; }
-        .python-identifier { color: #24292e; }
-        .copy-button {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 3px;
-            cursor: pointer;
-        }
-        .copy-button:hover {
-            background-color: #0056b3;
-        }
-    </style>
-    <button class="copy-button" onclick="copyCode()">Copy</button>
-    <pre id="code-block" class="python-code"><code>
+1. Run the conan_fgw_pre training stage
+```bash
+export CUDA_VISIBLE_DEVICES=0
+python conan_fgw/src/train_val.py \
+    --config_path=${WORKDIR}/conan_fgw/config/${model}/${task}/${ds}/${ds}_${n_cfm}_conan_fgw_pre.yaml \
+    --cuda_device=0 \
+    --data_root=${WORKDIR} \
+    --number_of_runs=${runs} \
+    --checkpoints_dir=${WORKDIR}/models \
+    --logs_dir=${WORKDIR}/outputs \
+    --run_name=${model}_${ds}_${n_cfm}_conan_fgw_pre \
+    --stage=conan_fgw_pre \
+    --model_name=${model} \
+    --run_id=${DATE}
+```
+2. Run the FGW (Fused Gromov-Wasserstein) training stage
+
+```bash
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+python conan_fgw/src/train_val.py \
+    --config_path=${WORKDIR}/conan_fgw/config/${model}/${task}/${ds}/${ds}_${n_cfm}_conan_fgw_bc.yaml \
+    --cuda_device=0 \
+    --data_root=${WORKDIR} \
+    --number_of_runs=${runs} \
+    --checkpoints_dir=${WORKDIR}/models \
+    --logs_dir=${WORKDIR}/outputs \
+    --run_name=${model}_${ds}_${n_cfm}_conan_fgw \
+    --stage=conan_fgw \
+    --model_name=${model} \
+    --run_id=${DATE} \
+    --conan_fgw_pre_ckpt_dir=${WORKDIR}/models/${model}_${ds}_${n_cfm}_conan_fgw_pre/${DATE}
+```
+
+<details>
+  <summary><b>Full Script</b></summary>
+
+```bash
 ## conan_fgw/script/run.sh
 ## Set the working directory to the current directory
 export WORKDIR=$(pwd)
@@ -214,13 +222,15 @@ python conan_fgw/src/train_val.py \
     --model_name=${model} \
     --run_id=${DATE} \
     --conan_fgw_pre_ckpt_dir=${WORKDIR}/models/${model}_${ds}_${n_cfm}_conan_fgw_pre/${DATE}
-</code></pre>
-</div>
+```
 
+</details>
 
 For your reference, we provide an abstract of two model classes **SchNet** and **ViSNet** related to the ConAN-FGW model initialization and calculation for both ConAN-FGW ```pretraining``` and ```training``` stages:
 
-**SchNet**
+<details>
+  <summary><b>SchNet</b></summary>
+
 ```python
 ## conan_fgw/src/model/graph_embeddings/schnet_no_sum.py
 from torch_geometric.nn import SchNet # The SchNet class used in ConAN is an extension of the SchNet class of torch_geometric
@@ -263,8 +273,12 @@ class SchNetNoSum(SchNet):
     ## Forward Pass with Bary Center Calculation
     ## Returns: Two tensors, one for standard 3D aggregation and one for barycenter aggregation.
 ```
+</details>
 
-**ViSNet**
+
+<details>
+  <summary><b>ViSNet</b></summary>
+
 ```python
 ## conan_fgw/src/model/graph_embeddings/visnet.py
 from torch_geometric.nn.models.visnet import ViSNet as NaiveViSNet # The ViSNet class used in ConAN is an extension of the ViSNet class of torch_geometric
@@ -295,6 +309,7 @@ class ViSNet(NaiveViSNet):
     ## Forward Pass with Bary Center Calculation
     ## Returns: Two tensors, one for standard 3D aggregation and one for barycenter aggregation.
 ```
+</details>
 
 ## Citation
 Please cite this paper if it helps your research:
