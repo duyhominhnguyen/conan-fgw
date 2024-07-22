@@ -1,5 +1,29 @@
-# Structure-Aware E(3)-Invariant Molecular Conformer Aggregation Networks (ICML 2024)
-:fire: :fire: This repository contains PyTorch implementation for our paper: **Structure-Aware E(3)-Invariant Molecular Conformer Aggregation Networks [[arXiv]](https://arxiv.org/abs/2402.01975)**.
+<h4 align="center">
+    <img alt="ConAN logo" src="docs/images/conan.png" style="width: 100%;">
+</h4>
+
+<p align="center">
+    <a href="https://lightning.ai/docs/pytorch/stable">
+        <img alt="Pytorch Lightning" src="https://img.shields.io/badge/pytorch-lightning-blue.svg?logo=PyTorch%20Lightning">
+    </a>
+    <a href="https://star-history.com/#duyhominhnguyen/conan-fgw">
+        <img alt="GitHub stars" src="https://img.shields.io/github/stars/duyhominhnguyen/conan-fgw?style=flat-square">
+    </a>
+    <a href="https://github.com/duyhominhnguyen/conan-fgw/issues">
+        <img alt="Open Issues" src="https://img.shields.io/github/issues-raw/duyhominhnguyen/conan-fgw?style=flat-square">
+    </a>
+    <a href="https://opensource.org/license/MIT">
+        <img alt="License" src="https://img.shields.io/github/license/duyhominhnguyen/conan-fgw">
+    </a>
+</p>
+
+<h1>
+    <p align="center">
+        Structure-Aware E(3)-Invariant Molecular Conformer Aggregation Networks
+    </p>
+</h1>
+
+:fire: :fire: This repository contains PyTorch implementation for our paper: **Structure-Aware E(3)-Invariant Molecular Conformer Aggregation Networks (ICML 2024) [[arXiv]](https://arxiv.org/abs/2402.01975)**.
 
 ![Overview figure](figs/ala.png)
 
