@@ -23,7 +23,7 @@
     </p>
 </h1>
 
-:fire: :fire: This repository contains PyTorch implementation for our paper: **Structure-Aware E(3)-Invariant Molecular Conformer Aggregation Networks (ICML 2024) [[arXiv]](https://arxiv.org/abs/2402.01975)**.
+:fire: :fire: This repository contains PyTorch implementation for our paper: **Structure-Aware E(3)-Invariant Molecular Conformer Aggregation Networks (ICML 2024) [[arXiv]](https://arxiv.org/abs/2402.01975) [[Poster](https://github.com/duyhominhnguyen/conan-fgw/blob/main/docs/ICML-2024-ConAN_final.pdf)]**.
 
 ![Overview figure](figs/ala.png)
 
