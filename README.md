@@ -34,6 +34,7 @@
 - [Installation](#installation)
 - [Data](#data)
 - [Quickstart](#quickstart)
+- [Citation](#citation)
 
 ## Update
 :mega: **17 July 2024**: We release 1st version of codebase.
@@ -153,7 +154,7 @@ then, the rest of the bash script follows:
 ```bash
 export CUDA_VISIBLE_DEVICES=0
 python conan_fgw/src/train_val.py \
-    --config_path=${WORKDIR}/conan_fgw/config/${model}/${task}/${ds}/${ds}_${n_cfm}_conan_fgw_pre.yaml \
+    --config_path=${WORKDIR}/conan_fgw/config/${model}/${task}/${ds}/${ds}_${n_cfm}.yaml \
     --cuda_device=0 \
     --data_root=${WORKDIR} \
     --number_of_runs=${runs} \
@@ -169,7 +170,7 @@ python conan_fgw/src/train_val.py \
 ```bash
 export CUDA_VISIBLE_DEVICES=0,1,2,3
 python conan_fgw/src/train_val.py \
-    --config_path=${WORKDIR}/conan_fgw/config/${model}/${task}/${ds}/${ds}_${n_cfm}_conan_fgw_bc.yaml \
+    --config_path=${WORKDIR}/conan_fgw/config/${model}/${task}/${ds}/${ds}_${n_cfm}_bc.yaml \
     --cuda_device=0 \
     --data_root=${WORKDIR} \
     --number_of_runs=${runs} \
@@ -197,7 +198,7 @@ DATE=$(date +"%Y-%m-%d-%H-%M-%S")
 export CUDA_VISIBLE_DEVICES=0
 ## Run the conan_fgw_pre training stage
 python conan_fgw/src/train_val.py \
-    --config_path=${WORKDIR}/conan_fgw/config/${model}/${task}/${ds}/${ds}_${n_cfm}_conan_fgw_pre.yaml \
+    --config_path=${WORKDIR}/conan_fgw/config/${model}/${task}/${ds}/${ds}_${n_cfm}.yaml \
     --cuda_device=0 \
     --data_root=${WORKDIR} \
     --number_of_runs=${runs} \
@@ -211,7 +212,7 @@ python conan_fgw/src/train_val.py \
 export CUDA_VISIBLE_DEVICES=0,1,2,3
 ## Run the FGW (Fused Gromov-Wasserstein) training stage
 python conan_fgw/src/train_val.py \
-    --config_path=${WORKDIR}/conan_fgw/config/${model}/${task}/${ds}/${ds}_${n_cfm}_conan_fgw_bc.yaml \
+    --config_path=${WORKDIR}/conan_fgw/config/${model}/${task}/${ds}/${ds}_${n_cfm}_bc.yaml \
     --cuda_device=0 \
     --data_root=${WORKDIR} \
     --number_of_runs=${runs} \
