@@ -13,7 +13,7 @@ export PYTHONPATH="$WORKDIR:$PYTHONPATH"
 DATE=$(date +"%Y-%m-%d-%T")
 
 # Define variables for the model, task, dataset, number of conformers, and number of runs
-model=visnet                      
+model=schnet                      
 task=property_regression
 ds=esol
 n_cfm_conan_fgw_pre=5

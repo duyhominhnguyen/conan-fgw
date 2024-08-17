@@ -28,7 +28,7 @@ def config_yaml_parser() -> JsonArgsParser:
     - --max-iter: Maximum number of iterations for Bary Center (int, default=100)
     - --epsilon: Epsilon value for Bary Center (float, default=0.1)
     - --trade-off: Flag to enable trade-off for AUC-PRC (bool, default=False)
-
+    - --agg_weight: Aggregation weight for combining different terms or losses.
     Returns:
         ArgumentParser: Configured ArgumentParser instance.
 
@@ -53,6 +53,7 @@ def config_yaml_parser() -> JsonArgsParser:
     ## args Bary Center
     args_parser.add_argument("--max-iter", type=int, default=100)
     args_parser.add_argument("--epsilon", type=float, default=0.1)
+    args_parser.add_argument("--agg-weight", type=float, default=0.2)
 
     ## args trade off AUC-PRC (classification task only)
     args_parser.add_argument("--trade-off", type=bool, default=False)
