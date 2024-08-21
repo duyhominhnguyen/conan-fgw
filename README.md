@@ -64,7 +64,7 @@ To re-produce this project, you will need to have the following dependencies ins
 - [PyTorch](https://pytorch.org/) (version 2.0 or later)
 - [PyTorch Geometric](https://pytorch-geometric.readthedocs.io/en/latest/)
 
-**Note**: Note: To check your CUDA version, use the following command:
+**Note**: To check your CUDA version, use the following command:
 ```bash
 nvidia-smi
 ```
