@@ -58,11 +58,23 @@ The repository is structured as follows:
 
 To re-produce this project, you will need to have the following dependencies installed:
 - Ubuntu 18.04.6 LTS
-- CUDA Version: 11.7
+- CUDA Version: 11
 - [Miniconda](https://docs.conda.io/en/latest/miniconda.html)
 - Python 3
 - [PyTorch](https://pytorch.org/) (version 2.0 or later)
 - [PyTorch Geometric](https://pytorch-geometric.readthedocs.io/en/latest/)
+
+**Note**: Note: To check your CUDA version, use the following command:
+```bash
+nvidia-smi
+```
+the output should look like this:
+
+```bash
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 470.182.03   Driver Version: 470.182.03   CUDA Version: 11.4     |
+|-------------------------------+----------------------+----------------------+
+```
 
 After installing Miniconda, you can create a new environment and install the required packages using the following commands:
 
@@ -163,7 +175,8 @@ python conan_fgw/src/train_val.py \
     --run_name=${model}_${ds}_${n_cfm}_conan_fgw_pre \
     --stage=conan_fgw_pre \
     --model_name=${model} \
-    --run_id=${DATE}
+    --run_id=${DATE} \
+#    --verbose ## To debug, set `--verbose` here for tracking detail running.
 ```
 2. Run the ConAN-FGW training stage
 
@@ -180,7 +193,8 @@ python conan_fgw/src/train_val.py \
     --stage=conan_fgw \
     --model_name=${model} \
     --run_id=${DATE} \
-    --conan_fgw_pre_ckpt_dir=${WORKDIR}/models/${model}_${ds}_${n_cfm}_conan_fgw_pre/${DATE}
+    --conan_fgw_pre_ckpt_dir=${WORKDIR}/models/${model}_${ds}_${n_cfm}_conan_fgw_pre/${DATE} \
+#    --verbose ## To debug, set `--verbose` here for tracking detail running.
 ```
 
 <details>

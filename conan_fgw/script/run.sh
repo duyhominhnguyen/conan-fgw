@@ -13,9 +13,9 @@ export PYTHONPATH="$WORKDIR:$PYTHONPATH"
 DATE=$(date +"%Y-%m-%d-%T")
 
 # Define variables for the model, task, dataset, number of conformers, and number of runs
-model=schnet                      
+model=schnet   
 task=property_regression
-ds=esol
+ds=esol ## lipo || esol || freesolv || bace
 n_cfm_conan_fgw_pre=5
 n_cfm_conan_fgw=5
 runs=5
@@ -33,7 +33,8 @@ python conan_fgw/src/train_val.py \
         --run_name=$model\_$ds\_$n_cfm_conan_fgw_pre \
         --stage=conan_fgw_pre \
         --model_name=${model} \
-        --run_id=$DATE
+        --run_id=$DATE \
+        # --verbose
 
 # Set the visible CUDA devices to GPUs 0, 1, 2, and 3 for using Distributed Data Parallel
 export CUDA_VISIBLE_DEVICES=0,1,2,3
@@ -49,4 +50,5 @@ python conan_fgw/src/train_val.py \
         --stage=conan_fgw \
         --model_name=${model} \
         --run_id=$DATE \
-        --conan_fgw_pre_ckpt_dir=${WORKDIR}/models/$model\_$ds\_$n_cfm_conan_fgw_pre/$DATE
+        --conan_fgw_pre_ckpt_dir=${WORKDIR}/models/$model\_$ds\_$n_cfm_conan_fgw_pre/$DATE \
+        # --verbose

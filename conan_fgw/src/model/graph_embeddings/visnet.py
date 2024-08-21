@@ -2,6 +2,7 @@ from typing import Optional, Callable, Tuple
 import torch
 from torch import Tensor, LongTensor
 from torch.nn import ModuleList
+
 # from torch_geometric.nn.models.visnet import ViSNet as NaiveViSNet
 from conan_fgw.src.model.graph_embeddings.torch_geometric_visnet import ViSNet as NaiveViSNet
 from torch_geometric.typing import OptTensor
@@ -11,6 +12,7 @@ from torch_geometric.nn.models.schnet import RadiusInteractionGraph
 from conan_fgw.src.model.fgw.barycenter import fgw_barycenters, normalize_tensor
 import torch.nn.functional as F
 from torch import linalg as LA
+
 
 def get_list_node_features(out, mask):
     """

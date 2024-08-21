@@ -1,0 +1,15 @@
+disable_distribution: true
+dataset_name: ['bace']
+dummy_size: -1 # work with a small subset of original dataset
+target: [ 'pIC50']
+num_conformers: 5
+prune_conformers: false
+batch_size: 48
+experiment: conan_fgw.src.experiments.SOTAExperiment
+num_epochs: 200
+early_stopping:
+  min_delta: 0.0001
+  patience: 50
+learning_rate: 0.001 # LR to start with
+use_lr_finder: true
+use_wandb: false
