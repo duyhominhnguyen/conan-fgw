@@ -53,7 +53,11 @@ class MoleculeNetClassificationModel(pl.LightningModule, metaclass=ABCMeta):
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
         scheduler = ReduceLROnPlateau(
-            optimizer, mode="min", patience=5, factor=0.5, verbose=True
+            optimizer,
+            mode="min",
+            patience=5,
+            factor=0.5,
+            verbose=False,  ## Disable to show LR
         )  # factor = 0.5
         return {
             "optimizer": optimizer,
@@ -248,7 +252,13 @@ class MoleculeNetRegressionModel(pl.LightningModule, metaclass=ABCMeta):
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
-        scheduler = ReduceLROnPlateau(optimizer, mode="min", patience=10, factor=0.8, verbose=True)
+        scheduler = ReduceLROnPlateau(
+            optimizer,
+            mode="min",
+            patience=10,
+            factor=0.8,
+            verbose=False,  ## Disable to show LR
+        )
         return {"optimizer": optimizer, "lr_scheduler": scheduler, "monitor": "val_loss"}
 
     def training_step(self, batch, batch_idx):

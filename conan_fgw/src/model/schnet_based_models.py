@@ -105,7 +105,7 @@ class EmbeddingsWithGATAggregationBaryCenter(EquivAggregation):
         if "epsilon" in kwargs:
             self.epsilon = kwargs.get("epsilon")
 
-        self.agg_weight=0.2
+        self.agg_weight = 0.2
         if "agg_weight" in kwargs:
             self.agg_weight = kwargs.get("agg_weight")
 
@@ -334,7 +334,7 @@ class EmbeddingsWithGATAggregationClassificationBaryCenter(EquivAggregationClass
         ## build MLP to enhance the classification problem
         self.molecular_regression_lin = build_mlp_class(out_channels, is_complex=True)
         self.self_attention = SelfAttention(out_channels)
-        self.agg_weight=0.2
+        self.agg_weight = 0.2
         if "agg_weight" in kwargs:
             self.agg_weight = kwargs.get("agg_weight")
 

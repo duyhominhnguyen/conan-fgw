@@ -77,7 +77,7 @@ def cmd_args_parser() -> CmdArgsParser:
         --run_id (str): ID of the current run.
         --model_name (str, choices=["schnet", "visnet"], default="schnet"): Name of the model to be created.
         --conan_fgw_pre_ckpt_dir (str, default=None): Directory of the conan_fgw_pre checkpoint (if any).
-
+        --verbose (bool, default=False): If True, prints the detail running.
     Returns:
         ArgumentParser: Configured argument parser.
     """
@@ -116,7 +116,14 @@ def cmd_args_parser() -> CmdArgsParser:
         help="Name of the model to be created (default: 'schnet'). Available options are 'schnet' and 'visnet'.",
     )
     cmd_args_parser.add_argument(
-        "--conan_fgw_pre_ckpt_dir", default=None, help="Directory of the conan_fgw_pre checkpoint (if any)."
+        "--conan_fgw_pre_ckpt_dir",
+        default=None,
+        help="Directory of the conan_fgw_pre checkpoint (if any).",
+    )
+    cmd_args_parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Print the detail running",
     )
 
     return cmd_args_parser

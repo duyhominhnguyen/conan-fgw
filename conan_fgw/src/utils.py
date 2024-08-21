@@ -1,12 +1,14 @@
 import logging
 import logging.handlers
 import os
+import sys
 import torch
 from prettytable import PrettyTable
 from conan_fgw.src.trainer import TrainerHolder
 import numpy as np
 
 logger = logging.getLogger("ConAN")
+
 
 def build_logger(logger_name: str, logger_filename: str):
     global handler
@@ -60,8 +62,10 @@ def get_conan_fgw_pre_ckpt(conan_fgw_pre_ckpt_dir: str, run_idx: str = "0"):
             return conan_fgw_pre_ckpt_path
     return conan_fgw_pre_ckpt_path
 
-regression = ["lipo", "esol", "freesolv", "lipo"]
+
+regression = ["lipo", "esol", "freesolv", "bace"]
 classification = ["sars_cov", "sars_cov_2_gen"]
+
 
 class AverageRuns:
     def __init__(self, config):
@@ -110,7 +114,7 @@ class AverageRuns:
                     self.monitor_metrics[m_name].append(metric)
                 else:
                     continue
-        logger.info(f"Register Metrics: {self.monitor_metrics}")
+
     def get_avg_metric(self):
         list_avg = [self.config.dataset_name[0]]
         for i in range(1, len(self.stats_table.field_names)):
@@ -122,3 +126,51 @@ class AverageRuns:
             list_avg.append(text)
         self.stats_table.add_row(list_avg)
         return self.stats_table
+
+
+def format_log_message_table(stage, checkpoint_path: str, metric_path: str, log_path: str):
+    """
+    Formats a log message into a table-like structure with adaptive column widths.
+
+    Args:
+    - stage (str): The current training stage.
+    - checkpoint_path (str): Path where the checkpoint is saved.
+    - metric_path (str): Path where metric is monitored.
+    - log_path (str): Path where log is monitored.
+
+    Returns:
+    - str: Formatted log message in a table-like structure.
+    """
+    pwd = os.getenv("WORKDIR")
+
+    # Define the data to be displayed
+    rows = [
+        ("Run Stage", stage),
+        ("Checkpoint Path", checkpoint_path.replace(pwd, "")),
+        ("Metric Path", metric_path.replace(pwd, "")),
+        ("Log Path", log_path.replace(pwd, "")),
+    ]
+
+    # Calculate the maximum width needed for each column
+    label_width = max(len(label) for label, _ in rows) + 2  # Adding padding
+    value_width = max(len(value) for _, value in rows) + 2  # Adding padding
+
+    # Calculate the total table width
+    table_width = label_width + value_width + 7  # 7 for padding and dividers
+
+    # Create table borders
+    separator = "-" * table_width
+    header = "Log Information".center(table_width)
+
+    # Build the table
+    table = f"{separator}\n"
+    table += f" {header} \n"
+    table += f"{separator}\n"
+
+    for label, value in rows:
+        row = f"| {label.ljust(label_width)} | {value.ljust(value_width)} |\n"
+        table += row
+
+    table += f"{separator}\n"
+
+    return table
