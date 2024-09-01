@@ -1,0 +1,9 @@
+rdkit
+pandas
+jsonargparse
+lightning
+scikit-learn-extra
+ipython
+py3Dmol
+matplotlib
+prettytable

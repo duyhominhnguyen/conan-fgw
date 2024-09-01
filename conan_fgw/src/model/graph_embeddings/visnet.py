@@ -9,7 +9,7 @@ from torch_geometric.typing import OptTensor
 from torch_geometric.utils import to_dense_adj, to_dense_batch, scatter
 from torch_geometric.nn.resolver import aggregation_resolver as aggr_resolver
 from torch_geometric.nn.models.schnet import RadiusInteractionGraph
-from conan_fgw.src.model.fgw.barycenter import fgw_barycenters, normalize_tensor
+from conan_fgw.src.model.fgw.barycenter import fgw_barycenters, normalize_tensor, batch_fgw_barycenters_BAPG, Epsilon
 import torch.nn.functional as F
 from torch import linalg as LA
 
@@ -202,31 +202,55 @@ class ViSNet(NaiveViSNet):
                 ]
                 lambdas = torch.ones(len(list_adjs), dtype=torch.float32) / len(list_adjs)
 
-            F_bary, C_bary, log = fgw_barycenters(
+            # F_bary, C_bary, log = fgw_barycenters(
+            #     N=adj_dense_sample.shape[1],
+            #     Ys=out_ft_sample,
+            #     Cs=list_adjs,
+            #     ps=w_tmp,
+            #     lambdas=lambdas,
+            #     warmstartT=True,
+            #     symmetric=True,
+            #     method="sinkhorn_log",
+            #     alpha=0.5,
+            #     solver="PGD",
+            #     fixed_structure=True,
+            #     fixed_features=False,
+            #     epsilon=0.1,
+            #     p=None,
+            #     loss_fun="square_loss",
+            #     max_iter=5,
+            #     tol=1e-2,
+            #     numItermax=5,
+            #     stopThr=1e-2,
+            #     verbose=False,
+            #     log=True,
+            #     init_C=list_adjs[0],
+            #     init_X=None,
+            #     random_state=None,
+            # )
+
+            out_ft_sample = torch.stack(out_ft_sample)
+            list_adjs = torch.stack(list_adjs)
+            w_tmp = torch.stack(w_tmp)
+            rho = Epsilon(target=1., init=22, decay=0.5)
+            F_bary, C_bary, log = batch_fgw_barycenters_BAPG(
                 N=adj_dense_sample.shape[1],
                 Ys=out_ft_sample,
                 Cs=list_adjs,
                 ps=w_tmp,
                 lambdas=lambdas,
-                warmstartT=True,
-                symmetric=True,
-                method="sinkhorn_log",
-                alpha=0.1,
-                solver="PGD",
-                fixed_structure=False,
+                alpha=0.5,
+                fixed_structure=True,
                 fixed_features=False,
-                epsilon=0.1,
                 p=None,
                 loss_fun="square_loss",
-                max_iter=5,
-                tol=1e-2,
-                numItermax=5,
-                stopThr=1e-2,
+                max_iter=10,
+                toly=1e-3, tolc=1e-3,
+                rho=rho,
                 verbose=False,
                 log=True,
                 init_C=list_adjs[0],
                 init_X=None,
-                random_state=None,
             )
 
             ## check F_bary_batch
