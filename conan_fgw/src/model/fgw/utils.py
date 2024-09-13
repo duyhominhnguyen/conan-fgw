@@ -169,3 +169,44 @@ def euclidean_distances(X, Y, squared=False):
         c = c * (1 - torch.eye(X.shape[0]).to(c))
 
     return c
+
+
+class Epsilon:
+    """Epsilon scheduler for Sinkhorn and Sinkhorn Step."""
+
+    def __init__(
+        self,
+        target: float = None,
+        scale_epsilon: float = None,
+        init: float = 1.0,
+        decay: float = 1.0
+    ):
+        self._target_init = target
+        self._scale_epsilon = scale_epsilon
+        self._init = init
+        self._decay = decay
+
+    @property
+    def target(self) -> float:
+        """Return the final regularizer value of scheduler."""
+        target = 5e-2 if self._target_init is None else self._target_init
+        scale = 1.0 if self._scale_epsilon is None else self._scale_epsilon
+        return scale * target
+
+    def at(self, iteration: int = 1) -> float:
+        """Return (intermediate) regularizer value at a given iteration."""
+        if iteration is None:
+            return self.target
+        # check the decay is smaller than 1.0.
+        decay = min(self._decay, 1.0)
+        # the multiple is either 1.0 or a larger init value that is decayed.
+        multiple = max(self._init * (decay ** iteration), 1.0)
+        return multiple * self.target
+
+    def done(self, eps: float) -> bool:
+        """Return whether the scheduler is done at a given value."""
+        return eps == self.target
+
+    def done_at(self, iteration: int) -> bool:
+        """Return whether the scheduler is done at a given iteration."""
+        return self.done(self.at(iteration))
