@@ -37,6 +37,8 @@
 - [Citation](#citation)
 
 ## Update
+📣 **5 September 2024**: We provide a [notebook](https://github.com/duyhominhnguyen/conan-fgw/blob/main/notebooks/fgw.ipynb) for further explaining how to compute FGW distance given a set of K input graphs.
+
 :mega: **17 July 2024**: We release 1st version of codebase.
 
 ## Introduction
